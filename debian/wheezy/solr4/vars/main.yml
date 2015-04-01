@@ -1,0 +1,11 @@
+---
+
+# Tomcat-related
+tomcat:
+  # Choose Java's JVM between: java-6-openjdk-6 or java-7-openjdk
+  jvm: java-7-openjdk
+
+## Solr-related
+solr:
+  download_url: http://archive.apache.org/dist/lucene/solr/4.4.0/solr-4.4.0.tgz
+  download_file: /var/local/cache/solr-4.4.0.tgz

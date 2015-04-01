@@ -1,0 +1,168 @@
+---
+
+  #
+  # Install APT Packages
+  #
+
+  - name: Update APT index
+    apt: update_cache=yes
+
+  - name: Install Java and Tomcat
+    apt: pkg={{item}} state=latest
+    with_items:
+    - openjdk-7-jdk
+    - openjdk-6-jdk
+    - tomcat6
+    - tomcat6-admin
+    - tomcat6-docs
+    - tomcat6-examples
+  
+  #
+  # Configure Tomcat
+  #
+  
+  - name: Decide which Java executable to use
+    shell: update-alternatives --list java| grep -e '/usr/lib/jvm/{{tomcat.jvm}}-.*/jre/bin/java'
+    register: java_executable
+  #- debug: var=java_executable
+
+  - set_fact:
+      java_home: '{{java_executable.stdout| regex_replace("/jre/bin/java$", "") }}'
+      
+  - name: Backup Tomcat default configuration
+    command: cp /etc/tomcat6/server.xml /etc/tomcat6/server.xml.orig creates=/etc/tomcat6/server.xml.orig 
+  
+  - name: Provide Tomcat server configuration
+    template: src=etc/tomcat6/server.xml dest=/etc/tomcat6/server.xml
+    notify: [restart-tomcat]
+ 
+  - set_fact:
+      manager_password: '{{lookup("file", "secrets/manager-password")}}'
+
+  - name: Provide Tomcat basic users
+    template: src=etc/tomcat6/tomcat-users.xml dest=/etc/tomcat6/tomcat-users.xml group=tomcat6 mode=0660
+    notify: [restart-tomcat]
+ 
+  - name: Provide environment for Tomcat service
+    template: src=etc/default/tomcat6 dest=/etc/default/tomcat6
+    notify: [restart-tomcat]
+
+  #
+  # Download Solr (v4.x)
+  #
+
+  - file: path={{solr.download_file| dirname}} state=directory mode=0775
+
+  - name: Check if Solr package is present
+    stat: path={{solr.download_file}} 
+    register: stat_download
+  #- debug: var=stat_download
+
+  - name: Download Solr package if needed
+    get_url: url={{solr.download_url}} dest={{solr.download_file}}
+    when: '{{not stat_download.stat.exists}}'
+  
+  - name: Find package name 
+    shell: tar tf '{{solr.download_file}}'| awk -F '/' '{print $1}'| uniq
+    register: package_dirs
+  - assert:
+      that: 
+      - package_dirs.stdout_lines| length == 1
+      - package_dirs.stdout| match("^solr-4\..*")
+  - set_fact:
+      package_name: '{{package_dirs.stdout}}'
+
+  - name: Unpack Solr package
+    unarchive: src={{solr.download_file}} dest=/opt/ creates=/opt/{{package_name}} owner=root group=tomcat6 copy=no 
+  
+  - name: Link to unpacked Solr package
+    file: path=/opt/solr src=/opt/{{package_name}} state=link
+
+  #
+  # Install Solr
+  #
+
+  - name: Create directory to install Solr libs
+    file: path={{solr.share_dir}} state=directory group=tomcat6 mode=0775
+ 
+  - name: Install Solr WAR archive
+    command: cp  /opt/solr/dist/{{package_name}}.war {{solr.share_dir}}/{{package_name}}.war
+  
+  - name: Link to package WAR archive
+    file: path={{solr.share_dir}}/solr.war src={{solr.share_dir}}/{{package_name}}.war state=link
+
+  - shell: ls /opt/solr/dist/| grep -e '\.jar$'
+    register: solr_jars
+  - debug: var=solr_jars
+
+  - name: Install Solr`s own JAR libraries
+    command: cp /opt/solr/dist/{{item}} {{solr.share_dir}}/{{item}}
+    with_items: '{{solr_jars.stdout_lines}}'
+  
+  - name: Install Solr`s JAR dependencies
+    command: cp -r /opt/solr/dist/solrj-lib {{solr.share_dir}}/solrj-lib
+ 
+  #
+  # Configure Solr
+  #
+
+  - name: Create Solr`s home directory
+    file: path={{solr.home_dir}} state=directory group=tomcat6 mode=0775
+  
+  - name: Copy Solr`s root configuration
+    template: src=etc/solr/solr.xml dest={{solr.home_dir}}/solr.xml
+
+  - name: Create Solr`s core root directories
+    file: path={{solr.home_dir}}/{{item.name}} state=directory mode=0775
+    with_items: '{{solr.cores| union([{ "name": "example"}])}}'
+  
+  - name: Copy Solr`s core default configuration
+    command: cp -r /opt/solr/example/solr/collection1/conf {{solr.home_dir}}/{{item.name}}/
+    with_items: '{{solr.cores| union([{ "name": "example"}])}}'
+  
+  - name: Copy Solr`s core-specific engine configuration
+    template: src=etc/solr/_core/conf/solrconfig.xml dest={{solr.home_dir}}/{{item.name}}/conf/solrconfig.xml
+    with_items: '{{solr.cores| union([{ "name": "example"}])}}'
+ 
+  - name: Copy Solr`s core-specific schema configuration
+    copy: src=etc/solr/{{item.name}}/conf/schema.xml dest={{solr.home_dir}}/{{item.name}}/conf/schema.xml
+    with_items: '{{solr.cores}}'
+  
+  - name: Copy Solr`s core-specific elevate configuration
+    copy: src=etc/solr/{{item.name}}/conf/elevate.xml dest={{solr.home_dir}}/{{item.name}}/conf/elevate.xml
+    with_items: '{{solr.cores}}'
+
+  - file: path={{solr.home_dir}} recurse=yes owner=root group=tomcat6 
+
+  #
+  # Initialize Solr`s core data directories
+  #
+
+  - name: Create Solr`s core data directories writable by Tomcat
+    file: path={{solr.home_dir}}/{{item.name}}/data state=directory owner=tomcat6 group=tomcat6 mode=0775
+    with_items: '{{solr.cores| union([{ "name": "example"}])}}'
+
+  #
+  # Deploy Solr under Tomcat
+  #
+  
+  - shell: ls {{solr.share_dir}}/solrj-lib/| grep -e '\.jar$'
+    register: solr_jar_deps
+  - debug: var=solr_jar_deps
+
+  - name: Make JAR dependencies available to Tomcat
+    file: path=/usr/share/tomcat6/lib/{{item}} src={{solr.share_dir}}/solrj-lib/{{item}} state=link
+    with_items: '{{solr_jar_deps.stdout_lines}}'
+
+  - name: Deploy webapp under Tomcat
+    template: src=etc/tomcat6/Catalina/localhost/solr.xml dest=/etc/tomcat6/Catalina/localhost/solr.xml group=tomcat6
+    notify: [restart-tomcat]
+
+  #
+  # Done! 
+  #
+
+  - name: Print HTTP endpoint
+    debug:
+      msg: Browse http://{{inventory_hostname}}:{{tomcat.connector.port}}/solr
+
