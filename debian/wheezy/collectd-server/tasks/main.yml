@@ -1,0 +1,92 @@
+---
+  
+  #
+  # Install APT packages
+  #
+  
+  - name: Install APT packages for Apache/PHP
+    apt: pkg={{item}} state=latest
+    with_items:
+    - apache2
+    - php5
+    - php5-cli
+  
+  #
+  # Configure Apache
+  #
+  
+  - name: Enable digest authentication for Apache users
+    file: path=/etc/apache2/mods-enabled/auth_digest.load src=../mods-available/auth_digest.load state=link force=no
+
+  - name: Create a directory to store credentials
+    file: path=/etc/apache2/authn state=directory mode=0750 owner=root group=www-data
+
+  #
+  # Install CGP (https://github.com/pommi/CGP)
+  #
+  
+  - set_fact:
+      cgp: '{{collectd.cgp}}'
+
+  - set_fact:
+      cgp_archive_path: '/tmp/cgp-{{cgp.tag}}.tar.gz'
+  
+  - debug: var=cgp_archive_path
+
+  - name: Download CGP package
+    get_url: url=https://github.com/{{cgp.github_repo}}/archive/{{cgp.tag}}.tar.gz dest={{cgp_archive_path}} force=no mode=0644
+  
+  - name: Find CGP archive name
+    shell: tar tf '{{cgp_archive_path}}'| awk -F '/' '{print $1}'| uniq
+    register: cgp_archive_dirs
+  - assert:
+      that:
+      - cgp_archive_dirs.stdout_lines| length == 1
+      - cgp_archive_dirs.stdout| match("^CGP-.*")
+  - set_fact:
+      cgp_archive_name: '{{cgp_archive_dirs.stdout}}'
+  - debug: var=cgp_archive_name
+ 
+  - name: Unpack CGP archive to document root
+    command: tar xzvf {{cgp_archive_path}} -C {{cgp.document_root}} creates={{cgp.document_root}}/{{cgp_archive_name}}
+  
+  - name: Create a symlink to unpacked CGP app
+    file: path={{cgp.document_root}}/CGP src={{cgp_archive_name}} state=link force=yes
+
+  #
+  # Configure collectd server
+  #
+
+  - name: Replace configuration for network plugin
+    template: src=etc/collectd/network.conf dest=/etc/collectd/network.conf
+    notify: [restart-collectd]
+
+  #
+  # Configure CGP
+  #
+
+  - name: Generate local configuration for CGP
+    template: src=var/www/CGP/conf/config.local.php dest={{cgp.document_root}}/{{cgp_archive_name}}/conf/config.local.php
+  
+  # Todo: Provide any plugin configuration needed for CGP/plugin/<plugin-name>.json
+
+  
+  #
+  # Create Apache virtual hosts
+  #
+
+  - set_fact:
+      realm: '{{cgp.authn.realm}}'
+      secrets: '{{lookup("file", "etc/apache2/secrets")}}'
+
+  - name: Generate file for digest authentication
+    template: src=htdigest dest=/etc/apache2/authn/cgp.htdigest mode=0640 owner=root group=www-data
+
+  - name: Generate configuration for virtual host
+    template: src=etc/apache2/sites-available/cgp dest=/etc/apache2/sites-available/{{cgp.virtual_host}}
+    notify: [restart-apache2]
+  
+  - name: Enable virtual host under Apache
+    file: path=/etc/apache2/sites-enabled/{{cgp.virtual_host}} src=../sites-available/{{cgp.virtual_host}} state=link force=yes
+    notify: [restart-apache2]
+

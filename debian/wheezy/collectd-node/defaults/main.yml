@@ -1,0 +1,28 @@
+---
+
+collectd:
+
+  server: collectd.localdomain
+
+  plugins:
+    
+    processes: ~
+    
+    df:
+       devices: all
+
+#    df:      
+#      devices:
+#      - mountpoint: /
+#      - mountpoint: /var/local/lib/postgresql
+    
+#    postgresql:
+#      
+#      databases:
+#      - name: foo_tests
+#        user: collectd
+#        password: collectd 
+#
+#      - name: foo_pois
+#        user: collectd
+#        password: collectd 

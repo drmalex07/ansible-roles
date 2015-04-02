@@ -1,0 +1,28 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+    ServerName {{collectd.cgp.virtual_host}}
+
+	DocumentRoot {{collectd.cgp.document_root}}/CGP/
+	
+    <Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+
+	<Directory {{collectd.cgp.document_root}}/CGP/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+        
+        AuthType Digest
+        AuthName "{{collectd.cgp.authn.realm}}"
+        AuthDigestProvider file
+        AuthUserFile /etc/apache2/authn/cgp.htdigest
+        Require valid-user
+	</Directory>
+
+	ErrorLog "${APACHE_LOG_DIR}/error-cgp.log"
+	LogLevel warn
+	CustomLog "${APACHE_LOG_DIR}/access-cgp.log" combined
+</VirtualHost>

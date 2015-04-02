@@ -1,0 +1,21 @@
+---
+
+# Add/Override keys for base collectd.* variables
+collectd:
+
+  server: ~
+  
+  # Provide service-related settings
+  service:
+    listen_addresses:
+    - '127.0.0.1'
+    - '{{ansible_default_ipv4.address}}'
+  
+  # Provide CGP-related settings
+  cgp:
+     github_repo: pommi/CGP
+     tag: v0.4
+     document_root: /var/www
+     virtual_host: '{{inventory_hostname}}'
+     authn:
+       realm: 'CGP Panel'

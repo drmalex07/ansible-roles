@@ -1,0 +1,45 @@
+---
+
+  - debug: var=collectd
+
+  #
+  # Install APT packages
+  #
+
+  - name: Update APT index
+    apt: update_cache=yes
+  
+  - name: Install collectd-related packages
+    apt: pkg={{item}} state=latest
+    with_items:
+    - rrdtool
+    - librrd-dev
+    - collectd
+    - collectd-utils
+  
+  #
+  # Configure
+  #
+  
+  - name: Copy type definitions
+    template: src=etc/collectd/local_types.db dest=/etc/collectd/local_types.db
+  
+  - name: Empty conf.d directory for plugin configuration
+    file: path=/etc/collectd/conf.d state=absent
+
+  - name: Create conf.d directory for plugin configuration
+    file: path=/etc/collectd/conf.d state=directory
+  
+  - name: Generate configuration for network plugin
+    template: src=etc/collectd/network.conf dest=/etc/collectd/network.conf
+    notify: [restart-collectd] 
+
+  - name: Generate configuration for selected plugins
+    template: src=etc/collectd/conf.d/{{item.key}}.conf dest=/etc/collectd/conf.d/{{item.key}}.conf
+    with_dict: collectd.plugins
+    notify: [restart-collectd] 
+
+  - name: Generate main configuration file
+    template: src=etc/collectd/collectd.conf dest=/etc/collectd/collectd.conf backup=yes
+    notify: [restart-collectd] 
+
