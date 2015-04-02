@@ -1,0 +1,36 @@
+---
+
+  - name: Trust key for PostgreSQL APT repos
+    apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+
+  - name: Add PostgreSQL APT repos
+    copy: src=etc/apt/sources.list.d/pgdg.list dest=/etc/apt/sources.list.d/pgdg.list
+
+  - name: Update APT index
+    apt: update_cache=yes
+  
+  - name: Install basic utilities
+    apt: pkg={{item}} state=latest
+    with_items:
+    - python
+
+  - name: Install PostgreSQL APT packages
+    apt: pkg={{item}} state=latest
+    with_items:
+    - postgresql-{{postgres.version}}
+    - postgresql-contrib-{{postgres.version}}
+    - libpq-dev
+    - python-psycopg2
+    - pgtune
+ 
+  - name: Install PostGIS APT packages
+    apt: pkg={{item}} state=latest
+    with_items:
+    - postgresql-{{postgres.version}}-postgis-{{postgis.version}}
+    when: postgis.version
+  
+  - name: Install auxiliary packages
+    apt: pkg={{item}} state=latest
+    with_items:
+    - htop
+
