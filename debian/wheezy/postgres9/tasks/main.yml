@@ -58,16 +58,13 @@
     sudo_user: postgres
     with_items: postgres.users
     when: not item.name in existing_users
-
-  - set_fact:
-      secrets_file: secrets # relative to files
-
+    
   - name: Set user passwords
-    shell: psql -c '{{item}}'
+    command: psql -c 'ALTER ROLE "{{item.username}}" PASSWORD $${{item.password}}$$'
     sudo: yes
     sudo_user: postgres
-    with_lines:
-    - awk -v users={{requested_users| join(",")}} -f scripts/gen-alter-role.awk -- {{secrets_file}}
+    with_items: postgres.credentials| default([])
+    when: (item.username in requested_users) and (item.password| default(false))
 
   - name: Generate pg_hba.conf rules
     template: src=etc/postgresql/pg_hba.conf dest=/etc/postgresql/{{postgres.version}}/main/pg_hba.conf backup=yes

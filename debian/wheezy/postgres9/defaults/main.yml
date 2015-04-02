@@ -12,42 +12,46 @@ postgres:
   # Notes: 
   #  - If allowed addresses is omited, default is 'samehost'
   #  - If trusted is given, local (unix socket) connections are trusted
-#  users:
-#  - name: tester
-#    options: [LOGIN, CREATEDB]
-#    allowed_addresses: 
-#    - 'samenet'
-#    - '192.168.5.0/24'
-#  
-#  - name: nowhere-man
-#    options: [LOGIN]
-#    allowed_addresses: all
-#
-#  - name: collectd
-#    trusted: true 
-#
-#  # Additional tablespaces to be created
-#  tablespaces:
-#  - name: tablespace_1
-#    path: /var/local/lib/postgresql/tablespace-1
-#  
-#  # A set of databases to be created
-#  databases:
-#
-#  - name: foo_tests
-#    tablespace: tablespace_1
-#    owner: tester
-#    extensions: [hstore]
-#    readers: [nowhere-man]
-#    writers: [tester]
-#    initialize:
-#    - files/setup-scripts/foo_tests/1.sql
-#    - files/setup-scripts/foo_tests/2.sql
-#
-#  - name: foo_pois
-#    tablespace: tablespace_1
-#    owner: nowhere-man
-#    extensions: [postgis, hstore]
-#    readers: [tester, nowhere-man]
-#    writers: []
-#
+  users: [] 
+  #users:
+  #- name: tester
+  #  options: [LOGIN, CREATEDB]
+  #  allowed_addresses: 
+  #  - 'samenet'
+  #  - '192.168.5.0/24'
+  #- name: nowhere-man
+  #  options: [LOGIN]
+  #  allowed_addresses: all
+  #- name: collectd
+  #  trusted: true 
+
+  credentials: []
+  #credentials:
+  #- username: tester
+  #  password: t3ster
+
+  # Additional tablespaces to be created
+  tablespaces: []
+  #tablespaces:
+  #- name: tablespace_1
+  #  path: /var/local/lib/postgresql/tablespace-1
+  
+  # A set of databases to be created
+  databases: []
+  #databases:
+  #- name: foo_tests
+  #  tablespace: tablespace_1
+  #  owner: tester
+  #  extensions: [hstore]
+  #  readers: [nowhere-man]
+  #  writers: [tester]
+  #  initialize:
+  #  - files/setup-scripts/foo_tests/1.sql
+  #  - files/setup-scripts/foo_tests/2.sql
+  #- name: foo_pois
+  #  tablespace: tablespace_1
+  #  owner: nowhere-man
+  #  extensions: [postgis, hstore]
+  #  readers: [tester, nowhere-man]
+  #  writers: []
+
