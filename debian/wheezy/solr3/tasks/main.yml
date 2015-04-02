@@ -1,0 +1,55 @@
+---
+
+  #
+  # Install APT Packages
+  #
+
+  - name: Update APT index
+    apt: update_cache=yes
+
+  - name: Install Solr on Tomcat
+    apt: pkg={{item}} state=latest
+    with_items:
+    - openjdk-6-jdk
+    - openjdk-7-jdk
+    - tomcat6
+    - tomcat6-admin
+    - tomcat6-examples
+    - solr-tomcat
+  
+  - name: Decide which Java executable to use
+    shell: update-alternatives --list java| grep -e '/usr/lib/jvm/{{tomcat.jvm}}-.*/jre/bin/java'
+    register: java_executable
+
+  - set_fact:
+      #java_home: /usr/lib/jvm/default-java
+      java_home: '{{java_executable.stdout| regex_replace("/jre/bin/java$", "") }}'
+      
+  - name: Backup Tomcat default configuration
+    command: cp /etc/tomcat6/server.xml /etc/tomcat6/server.xml.orig creates=/etc/tomcat6/server.xml.orig 
+  
+  - name: Provide Tomcat server configuration
+    template: src=etc/tomcat6/server.xml dest=/etc/tomcat6/server.xml
+    notify: [restart-tomcat]
+ 
+  - set_fact:
+      manager_password: '{{lookup("file", "secrets/manager-password")}}'
+
+  - name: Provide Tomcat basic users
+    template: src=etc/tomcat6/tomcat-users.xml dest=/etc/tomcat6/tomcat-users.xml group=tomcat6 mode=0660
+    notify: [restart-tomcat]
+ 
+  - name: Provide environment for Tomcat service
+    template: src=etc/default/tomcat6 dest=/etc/default/tomcat6
+    notify: [restart-tomcat]
+
+  - name: Backup default Solr configuration
+    command: cp /etc/solr/conf/schema.xml /etc/solr/conf/schema.xml.orig creates=/etc/solr/conf/schema.xml.orig
+  
+  - name: Provide Solr's schema file
+    copy: src=etc/solr/conf/schema.xml dest=/etc/solr/conf/schema.xml
+    notify: [restart-tomcat]
+  
+  - name: Print Solr's HTTP endpoint
+    debug:
+      msg: Browse http://{{inventory_hostname}}:{{tomcat.connector.port}}/solr
