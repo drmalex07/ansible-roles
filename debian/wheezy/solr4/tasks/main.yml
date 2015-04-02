@@ -35,9 +35,10 @@
   - name: Provide Tomcat server configuration
     template: src=etc/tomcat6/server.xml dest=/etc/tomcat6/server.xml
     notify: [restart-tomcat]
- 
+
   - set_fact:
-      manager_password: '{{lookup("file", "secrets/manager-password")}}'
+      manager_username: '{{tomcat.manager.username}}'
+      manager_password: '{{tomcat.manager.password| default(lookup("password", "secrets/manager-password"))}}'
 
   - name: Provide Tomcat basic users
     template: src=etc/tomcat6/tomcat-users.xml dest=/etc/tomcat6/tomcat-users.xml group=tomcat6 mode=0660

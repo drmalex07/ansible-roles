@@ -6,6 +6,6 @@
   you must define such a user - the username and password are arbitrary.
 -->
   <role rolename="tomcat"/>
-  <user username="tomcat" password="{{manager_password}}" roles="tomcat,manager-gui"/>
+  <user username="{{manager_username}}" password="{{manager_password}}" roles="tomcat,manager-gui"/>
 </tomcat-users>
 
