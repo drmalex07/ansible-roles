@@ -1,0 +1,18 @@
+syntax on
+
+set ruler
+set number
+set hlsearch
+set ai
+set tabstop=4
+set expandtab
+set shiftwidth=4
+
+set t_Co=256
+
+"colorscheme 256-jungle-1
+colorscheme jellybeans-1
+
+set foldmethod=indent
+
+"execute pathogen#infect()

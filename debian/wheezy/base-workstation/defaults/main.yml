@@ -1,0 +1,32 @@
+---
+# Provide defaults for the base-workstation.
+# The variables below can be overriden at a group or host level.
+
+# Define a normal (sudo-capable) user to be created at the target machine
+user: ~
+#user:
+#  name: malex
+#  full_name: Michail Alexakis
+#  email: drmalex07@gmail.com
+
+
+# Provide a list of local private keys (under ~/.ssh) to be copied to the
+# home directory of the normal user at the target machine
+private_keys: []
+#private_keys:
+#- name: github
+#  uri: https://github.com
+#  key_file: id_rsa-github
+#- name: bitbucket
+#  uri: https://bitbucket.org
+#  key_file: id_rsa-bitbucket
+
+# Export local GPG keys to the target machine
+export_gpg_keys: false
+
+# Preferences for programs and shells
+prefs:
+  bash:
+    history_size: 8000
+    history_file_size: 50000
+

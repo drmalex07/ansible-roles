@@ -1,0 +1,145 @@
+---
+
+  #
+  # Install APT Packages
+  #
+  
+  - name: Add APT repository for wheezy-backports
+    copy: src=etc/apt/sources.list.d/wheezy-backports.list dest=/etc/apt/sources.list.d/wheezy-backports.list mode=0644
+
+  - name: Update APT index
+    apt: update_cache=yes
+
+  - name: Install basic utilities
+    apt: pkg={{item}} state=latest
+    with_items:
+    - sudo
+    - vim
+    - vim-scripts
+    - bzip2
+    - p7zip-full
+    - screen
+    - less
+    - wget
+    - curl
+    - rsync
+    - git
+    - mercurial
+    - htop
+  
+  - name: Install basic development packages
+    apt: pkg={{item}} state=latest
+    with_items:
+    - build-essential
+    - zlib1g-dev
+    - libxslt1-dev
+    - libxml2-dev
+
+  - name: Install Python-related packages
+    apt: pkg={{item}} state=latest
+    with_items:
+    - python-dev
+    - python-virtualenv
+    - python-setuptools
+    - ipython
+
+  #
+  # Setup user profiles and basic directories
+  #
+
+  - group: name=testers
+
+  - group: name=wheel
+    
+  - name: Configure sudo
+    copy: src=etc/sudoers.d/ dest=/etc/sudoers.d/
+
+  - name: Create a sudo-capable user account
+    user: name={{user.name}} createhome=yes shell=/bin/bash groups=sudo,testers,wheel append=yes
+    when: user
+
+  - name: Create bash profile for root
+    template: src=etc/root-profile dest=/root/.profile mode=0600
+
+  - name: Create bash profile for user 
+    template: src=etc/user-profile dest="/home/{{user.name}}/.profile" mode=0600 owner={{user.name}} group={{user.name}}
+    when: user
+     
+  - name: Create a user-local directories
+    file: path=/home/{{user.name}}/var state=directory mode=0755 owner={{user.name}} group={{user.name}}
+    when: user
+  
+  - name: Create a user-local workspace
+    file: path=/home/{{user.name}}/workspace state=directory mode=0755 owner={{user.name}} group={{user.name}}
+    when: user
+
+  #
+  # Create a Python virtualenv for user
+  #
+  
+    include: create-virtualenv.yml
+    when: user
+
+  #
+  # Configure Git client
+  #
+  
+  - name: Configure Git for user
+    copy: src=etc/gitconfig dest=~/.gitconfig 
+    sudo: yes
+    sudo_user: '{{user.name}}'
+    when: user
+
+  - name: Provide bash completion for git
+    get_url: url={{git_completion_script}} dest=/etc/bash_completion.d/git force=no mode=0644
+
+  #
+  # Configure SSH
+  #
+
+    include: configure-ssh-client.yml
+    when: user
+
+  #
+  # Import GPG keys
+  #
+    
+    include: import-gpg-keys.yml
+    when: user and export_gpg_keys
+ 
+  #
+  # Configure Vim
+  #
+
+  - name: Copy vimrc for root
+    copy: src=etc/vim/vimrc dest=/root/.vimrc mode=0644
+    register: result 
+  - template: src=result.json dest=/tmp/copied-root-vimrc.json
+  
+  - name: Copy vimrc for user
+    copy: src=etc/vim/vimrc dest=~/.vimrc mode=0644
+    sudo: yes
+    sudo_user: '{{user.name}}'
+    register: result
+    when: user
+  
+  - template: src=result.json dest=/tmp/copied-{{user.name}}-vimrc.json
+    when: user
+  
+  - name: Rsync vim files for root
+    synchronize: src=etc/vim/vim/ dest=/root/.vim/ owner=no group=no
+    register: result
+  - template: src=result.json dest=/tmp/copied-root-vim.json
+  
+  - name: Rsync vim files for user
+    synchronize: src=etc/vim/vim/ dest=/home/{{user.name}}/.vim/ owner=no group=no
+    register: result
+    when: user
+  
+  - file: path=/home/{{user.name}}/.vim/ recurse=yes state=directory owner={{user.name}} group={{user.name}}
+    when: user
+  
+  - template: src=result.json dest=/tmp/copied-{{user.name}}-vim.json
+    when: user
+  
+

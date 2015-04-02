@@ -1,0 +1,8 @@
+let g:netrw_dirhistmax  =10
+let g:netrw_dirhist_cnt =6
+let g:netrw_dirhist_1='/home/malex/workspace/me/ansible-examples/roles/base-workstation'
+let g:netrw_dirhist_2='/home/malex/workspace/me/ansible-examples/roles/base-workstation/tasks'
+let g:netrw_dirhist_3='/home/malex/workspace/me/ansible-examples/roles/base-workstation'
+let g:netrw_dirhist_4='/home/malex/workspace/me/ansible-examples/roles/base-workstation/files'
+let g:netrw_dirhist_5='/home/malex/workspace/examples/python/ansible-tests/templates'
+let g:netrw_dirhist_6='/home/malex/workspace/me/ansible-examples/roles/base-workstation/files'

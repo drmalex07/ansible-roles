@@ -1,0 +1,23 @@
+---
+
+  - name: Export local GPG keys
+    local_action: script scripts/export-gpg-keys.sh
+    register: exported_gpg_keys
+  
+  - name: Copy exported GPG keys
+    copy: src={{exported_gpg_keys.stdout}} dest={{exported_gpg_keys.stdout}} mode=0600
+    sudo: yes
+    sudo_user: "{{user.name}}"
+
+  - name: Import GPG keys
+    script: scripts/import-gpg-keys.sh {{exported_gpg_keys.stdout}}
+    sudo: yes
+    sudo_user: "{{user.name}}"
+    when: "{{user and export_gpg_keys}}"
+
+  - name: Cleanup local GPG export
+    local_action: file path={{exported_gpg_keys.stdout}} state=absent
+  
+  - name: Cleanup GPG export
+    file: path={{exported_gpg_keys.stdout}} state=absent
+
