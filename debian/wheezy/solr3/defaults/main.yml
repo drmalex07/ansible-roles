@@ -4,9 +4,14 @@ tomcat:
   # Define min/max for JVM's heap size
   max_heap_size: 192m
   min_heap_size: 64m
+  
   # Configure service endpoint
   connector:
     port: 8983
     address: 0.0.0.0
+  
+  manager:
+    username: tomcat
+    #password: tomc@t
 
 solr: ~ 
