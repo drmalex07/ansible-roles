@@ -38,7 +38,10 @@
 
   - set_fact:
       manager_username: '{{tomcat.manager.username}}'
-      manager_password: '{{tomcat.manager.password| default(lookup("password", "secrets/manager-password"))}}'
+      manager_password: '{{tomcat.manager.password| default("")}}'
+  - set_fact:    
+      manager_password: '{{lookup("password", "secrets/manager-password")}}'
+    when: not manager_password
 
   - name: Provide Tomcat basic users
     template: src=etc/tomcat6/tomcat-users.xml dest=/etc/tomcat6/tomcat-users.xml group=tomcat6 mode=0660

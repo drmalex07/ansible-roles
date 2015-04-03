@@ -17,6 +17,10 @@
     - tomcat6-examples
     - solr-tomcat
   
+  #
+  # Configure Tomcat
+  #
+
   - name: Decide which Java executable to use
     shell: update-alternatives --list java| grep -e '/usr/lib/jvm/{{tomcat.jvm}}-.*/jre/bin/java'
     register: java_executable
@@ -34,7 +38,10 @@
 
   - set_fact:
       manager_username: '{{tomcat.manager.username}}'
-      manager_password: '{{tomcat.manager.password| default(lookup("password", "secrets/manager-password"))}}'
+      manager_password: '{{tomcat.manager.password| default("")}}'
+  - set_fact:    
+      manager_password: '{{lookup("password", "secrets/manager-password")}}'
+    when: not manager_password
 
   - name: Provide Tomcat basic users
     template: src=etc/tomcat6/tomcat-users.xml dest=/etc/tomcat6/tomcat-users.xml group=tomcat6 mode=0660
@@ -43,6 +50,10 @@
   - name: Provide environment for Tomcat service
     template: src=etc/default/tomcat6 dest=/etc/default/tomcat6
     notify: [restart-tomcat]
+  
+  #
+  # Configure Solr (3.x)
+  #
 
   - name: Backup default Solr configuration
     command: cp /etc/solr/conf/schema.xml /etc/solr/conf/schema.xml.orig creates=/etc/solr/conf/schema.xml.orig
@@ -51,6 +62,10 @@
     copy: src=etc/solr/conf/schema.xml dest=/etc/solr/conf/schema.xml
     notify: [restart-tomcat]
   
-  - name: Print Solr's HTTP endpoint
+  #
+  # Done!
+  #
+
+  - name: Print HTTP endpoint
     debug:
       msg: Browse http://{{inventory_hostname}}:{{tomcat.connector.port}}/solr
