@@ -1,5 +1,4 @@
-{% for line in secrets.splitlines() -%}
-{% set username, password = line.split(':', 1) -%}
-{% set digested_password = (username ~ ':' ~ realm ~ ':' ~ password)| md5 -%}
-{{username ~ ':' ~ realm ~ ':' ~ digested_password}}
+{% for cred in credentials -%}
+{% set digested_password = (cred.username ~ ':' ~ realm ~ ':' ~ cred.password)| md5 -%}
+{{cred.username ~ ':' ~ realm ~ ':' ~ digested_password}}
 {% endfor -%}

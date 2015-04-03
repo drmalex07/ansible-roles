@@ -19,3 +19,7 @@ collectd:
      virtual_host: '{{inventory_hostname}}'
      authn:
        realm: 'CGP Panel'
+       credentials: []
+       #credentials:
+       #- username: collectd
+       #  password: c0llectd
