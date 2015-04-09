@@ -1,0 +1,30 @@
+---
+
+  - shell: psql -t -A -F ',' -c '\du'| awk -F ',' -- '{print $1}' 
+    sudo: yes
+    sudo_user: postgres
+    register: psql_du_result
+  
+  - set_fact:
+      existing_users: '{{psql_du_result.stdout_lines}}'
+      requested_users: '{{postgres.users| map(attribute="name")| list}}'
+  #- debug: var=existing_users
+
+  - name: Create database users
+    command: psql -c 'CREATE USER "{{item.name}}" WITH {{item.options| default(["LOGIN"])| join(" ")}}'
+    sudo: yes
+    sudo_user: postgres
+    with_items: postgres.users
+    when: not item.name in existing_users
+    
+  - name: Set user passwords
+    command: psql -c 'ALTER ROLE "{{item.username}}" PASSWORD $${{item.password}}$$'
+    sudo: yes
+    sudo_user: postgres
+    with_items: postgres.credentials| default([])
+    when: (item.username in requested_users) and (item.password| default(false))
+
+  - name: Generate pg_hba.conf rules
+    template: src=etc/postgresql/pg_hba.conf dest=/etc/postgresql/{{postgres.version}}/main/pg_hba.conf backup=yes
+    notify: [restart-postgresql]
+

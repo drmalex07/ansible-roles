@@ -55,3 +55,26 @@ postgres:
   #  readers: [tester, nowhere-man]
   #  writers: []
 
+
+  replication:
+    # The mode (role) of operation, choose: master, standby 
+    role: ~
+    #role: master
+    
+    # The user that will connect with the (streaming) replication protocol
+    user: replicator
+    
+    master: ~
+    #master:
+    #  # Number of WAL segments to keep (see wal_keep_segments)
+    #  num_wal_segments: 32
+    #  clients:
+    #    # Maximum expected number of standby clients
+    #    max_num: 3
+    #    # Provide the addresses for clients as a list of either hosts or subnets
+    #    # The special values `samenet` and `samehost` are recognized (as in pg_hba.conf) 
+    #    allowed_addresses: ['samenet']
+
+    standby: ~
+    #standby: ~
+

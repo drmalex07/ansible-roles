@@ -1,0 +1,22 @@
+---
+
+  - shell: psql -t -A -F ',' -c '\db'| awk -F ',' -- '{print $1}' 
+    sudo: yes
+    sudo_user: postgres
+    register: psql_db_result
+
+  - set_fact:
+      existing_tablespaces: '{{psql_db_result.stdout_lines| difference(["pg_default", "pg_global"])}}'
+  #- debug: var=existing_tablespaces
+  
+  - name: Create directory structure for tablespace(s)
+    file: path={{item.path}} state=directory owner=postgres group=postgres mode=0755
+    with_items: postgres.tablespaces
+
+  - name: Create tablespaces
+    command: psql -c "CREATE TABLESPACE {{item.name}} LOCATION '{{item.path}}'" 
+    sudo: yes
+    sudo_user: postgres
+    with_items: postgres.tablespaces
+    when: not item.name in existing_tablespaces
+
