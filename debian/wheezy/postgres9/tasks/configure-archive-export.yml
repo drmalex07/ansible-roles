@@ -1,0 +1,41 @@
+---
+  
+  # Setup export of WAL archives via rsyncd
+  
+  - name: Touch rsyncd.conf
+    file: path=/etc/rsyncd.conf state=touch
+
+  - name: Generate a ini-style section for rsyncd.conf
+    ini_file:
+      dest: /etc/rsyncd.conf
+      option: '{{item.key}}'
+      value: '{{item.value}}'
+      section: postgresql-archive 
+      backup: yes
+    with_dict:
+      'uid': 'postgres'
+      'gid': 'postgres'
+      'comment': 'PostgreSQL WAL Archive'
+      'path':  '{{archive_dir}}'
+      'read only': 'yes'
+      'list': 'yes'
+      'hosts allow': '{{replication.master.clients.allowed_addresses| join(" ")}}'
+      'auth users': 'postgres'
+      'secrets file': '/etc/rsyncd.secrets'
+    #notify: [restart-rsyncd]
+  
+  - name: Read or generate password for rsync transfer
+    set_fact:
+      rsync_password: '{{lookup("password", "secrets/rsync chars=ascii_letters,digits")}}' 
+
+  - name: Provide credentials for rsync transfer
+    lineinfile:
+      mode: 0600
+      create: yes
+      dest: /etc/rsyncd.secrets
+      insertafter: EOF
+      line: 'postgres:{{rsync_password}}'
+
+  - name: Generate defaults for rsyncd daemon
+    template: src=etc/default/rsync dest=/etc/default/rsync backup=yes
+    #notify: [restart-rsyncd]

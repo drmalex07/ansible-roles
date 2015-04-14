@@ -23,7 +23,7 @@ postgres:
   #  options: [LOGIN]
   #  allowed_addresses: all
   #- name: collectd
-  #  trusted: true 
+  #  trusted: true
 
   credentials: []
   #credentials:
@@ -39,29 +39,23 @@ postgres:
   # A set of databases to be created
   databases: []
   #databases:
-  #- name: foo_tests
+  #- name: scratch1
   #  tablespace: tablespace_1
   #  owner: tester
-  #  extensions: [hstore]
+  #  extensions: [hstore, postgis]
   #  readers: [nowhere-man]
   #  writers: [tester]
   #  initialize:
-  #  - files/setup-scripts/foo_tests/1.sql
-  #  - files/setup-scripts/foo_tests/2.sql
-  #- name: foo_pois
-  #  tablespace: tablespace_1
-  #  owner: nowhere-man
-  #  extensions: [postgis, hstore]
-  #  readers: [tester, nowhere-man]
-  #  writers: []
-
+  #  - files/setup-scripts/scratch1/1.sql
+  #  - files/setup-scripts/scratch1/2.sql
 
   replication:
-    # The mode (role) of operation, choose: master, standby 
+    # The mode (role) of operation; choose: master, standby 
     role: ~
     #role: master
     
     # The user that will connect with the (streaming) replication protocol
+    # Note: The specified user will be created even if not contained in `users` list
     user: replicator
     
     master: ~
@@ -73,8 +67,9 @@ postgres:
     #    max_num: 3
     #    # Provide the addresses for clients as a list of either hosts or subnets
     #    # The special values `samenet` and `samehost` are recognized (as in pg_hba.conf) 
-    #    allowed_addresses: ['samenet']
+    #    allowed_addresses: ['localhost']
 
     standby: ~
-    #standby: ~
+    #standby:
+    #  master_host: 192.168.56.105
 

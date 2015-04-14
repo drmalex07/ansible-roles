@@ -1,0 +1,75 @@
+---
+  
+  - set_fact: 
+      replication: '{{postgres.replication}}'
+  
+  - assert:
+      that: not (replication.role == 'standby') or (replication.standby.master_host in groups.all)
+
+  # Compute network-related facts
+  
+  - set_fact:
+      ipv4_ifaces: '{{hostvars[inventory_hostname]| map_keys(ansible_interfaces, "ansible_{0}.ipv4")}}'
+    when: ipv4_ifaces is not defined
+  
+  - name: Compute active network addresses for this service
+    command: echo '{{item.value.network| ipv4_to_cidr(item.value.netmask)}}'
+    register: ipv4_active_networks
+    with_dict: ipv4_ifaces
+    when: item.value.address in postgres.service.listen_addresses
+  
+  - set_fact: 
+      ipv4_active_networks: '{{ipv4_active_networks.results| selectattr("changed")| list| map(attribute="stdout")| list}}'
+
+  # Compute basic directory paths
+  
+  - set_fact:
+      config_dir: '/etc/postgresql/{{postgres.version}}/main'
+      run_dir: '/var/run/postgresql/{{postgres.version}}'
+      archive_dir: '/var/backups/postgresql/{{postgres.version}}/archive' 
+      basebackup_dir: '/var/tmp/postgresql/{{postgres.version}}/backup'
+  
+  - name: Determine where is the data directory for the main cluster
+    shell: pg_lsclusters --no-header| grep -e '^{{postgres.version}}'| cut -f 6 -d ' '
+    register: pg_lsclusters_result
+
+  - set_fact:
+      data_dir: '{{pg_lsclusters_result.stdout}}'
+  
+  - shell: psql -t -A -F ',' -c '\du'| awk -F ',' -- '{print $1}' 
+    sudo: yes
+    sudo_user: postgres
+    register: psql_du_result
+  
+  # Compute user-related facts
+  
+  - set_fact:
+      existing_users: '{{psql_du_result.stdout_lines}}'
+      requested_users: '{{postgres.users| map(attribute="name")| list}}'
+
+  - set_fact:
+      known_users: '{{requested_users| union(existing_users)}}'
+  - set_fact:
+      known_users: '{{known_users| union([replication.user])}}'
+    when: replication.user
+  
+  # Compute tablespace-related facts
+
+  - shell: psql -t -A -F ',' -c '\db'| awk -F ',' -- '{print $1}' 
+    sudo: yes
+    sudo_user: postgres
+    register: psql_db_result
+
+  - set_fact:
+      existing_tablespaces: '{{psql_db_result.stdout_lines| difference(["pg_default", "pg_global"])}}'
+   
+   # Compute database-related facts
+
+  - shell: psql -A -F ',' -R '$' -t -c '\l'| awk -F ',' -v 'RS=$' -- '{print $1}'
+    sudo: yes
+    sudo_user: postgres
+    register: psql_l_result
+  
+  - set_fact:
+      existing_databases: '{{psql_l_result.stdout_lines}}'
+

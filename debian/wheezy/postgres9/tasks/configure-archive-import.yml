@@ -1,0 +1,6 @@
+---
+  
+  # Configure rsync to fetch exported WAL archives
+  
+  - name: Copy password file needed for rsync transfer
+    copy: src=secrets/rsync dest={{config_dir}}/rsync-password owner=postgres group=postgres mode=0600

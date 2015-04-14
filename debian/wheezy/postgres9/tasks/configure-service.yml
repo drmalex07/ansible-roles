@@ -1,0 +1,49 @@
+---
+  
+  # Create needed directory structure
+
+  - name: Create conf.d-like directory
+    file: path={{config_dir}}/conf.d state=directory owner=postgres group=postgres mode=0775
+  
+  - name: Create WAL archive directory
+    file: path={{archive_dir}} state=directory owner=postgres group=postgres mode=0700
+  
+  - name: Create run directory
+    file: path={{run_dir}} state=directory owner=postgres group=postgres mode=0755
+
+  # Generate configuration files
+
+  - name: Generate WAL-related configuration at wal.conf
+    template: src=etc/postgresql/wal.conf dest={{config_dir}}/wal.conf owner=postgres group=postgres
+  
+  - name: Generate replication-related configuration at replication.conf
+    template: src=etc/postgresql/replication.conf dest={{config_dir}}/replication.conf owner=postgres group=postgres
+  
+  - name: Generate a basic configuration at postgresql.conf
+    template: src=etc/postgresql/postgresql.conf dest={{config_dir}}/postgresql.conf owner=postgres group=postgres backup=yes
+    #notify: [restart-postgresql]
+    
+  # Tune  
+
+  - name: Generate locally-tuned configuration at postgresql-tuned.conf
+    shell: cd {{config_dir}} && pgtune -o postgresql-tuned.conf -i postgresql.conf
+    sudo: yes
+    sudo_user: postgres
+    when: postgres.pgtune
+
+  - name: Override with the tuned version of postgresql.conf
+    file: path={{config_dir}}/postgresql.conf src=postgresql-tuned.conf state=link force=yes
+    when: postgres.pgtune
+    #notify: [restart-postgresql]
+  
+  # Generate host-based access rules
+  
+  - name: Generate pg_hba.conf rules
+    template: src=etc/postgresql/pg_hba.conf dest={{config_dir}}/pg_hba.conf backup=yes
+    #notify: [restart-postgresql]
+  
+  # Generate pgpass entry for replication connections
+  
+  - name: Generate pgpass for replication connections
+    template: src=pgpass dest=~postgres/.pgpass owner=postgres group=postgres mode=0600 
+

@@ -1,15 +1,61 @@
 ---
 
   - debug: var=postgres
-  #- assert: {that: false}
   
   - include: install-packages.yml
   
-  - include: configure.yml
+  #
+  # Compute facts
+  #
+
+  - service: name=postgresql state=started
+
+  - include: compute-facts.yml
   
-  - include: create-users.yml
+  #
+  # Configure service 
+  #
+
+  - service: name=postgresql state=stopped
   
+  - include: configure-service.yml
+
+  - include: configure-archive-export.yml
+    when: replication.role == 'master'
+ 
+  - include: configure-archive-import.yml
+    when: replication.role == 'standby'
+ 
+  - service: name=postgresql state=started
+  
+  - service: name=rsync state=restarted
+  
+  #
+  # Create tablespaces
+  #
+
   - include: create-tablespaces.yml
+
+  #
+  # Setup users and databases (master)
+  #
+
+  - include: create-users.yml
+    when: not (replication.role == 'standby')
   
   - include: create-databases.yml
-    
+    when: not (replication.role == 'standby')
+  
+  #
+  # Take and apply basebackup from master (standby)
+  #
+
+  - service: name=postgresql state=stopped
+    when: replication.role == 'standby'
+  
+  - include: basebackup-master.yml
+    when: replication.role == 'standby'
+  
+  - service: name=postgresql state=started
+    when: replication.role == 'standby'
+  

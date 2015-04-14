@@ -1,0 +1,6 @@
+#hostname:port:database:username:password
+{% for cred in postgres.credentials -%}
+{% if cred.username == replication.user -%}
+*:{{postgres.service.port}}:replication:{{replication.user}}:{{cred.password}}
+{% endif -%}
+{% endfor -%}

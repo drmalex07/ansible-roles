@@ -1,0 +1,68 @@
+---
+
+ - assert:
+     that: 
+     - replication.role == 'standby'
+     - replication.standby.master_host in hostvars.keys()
+ 
+ - wait_for: host={{replication.standby.master_host}} port={{postgres.service.port}} state=started
+
+ # Take a basebackup from master node
+ 
+ - name: Create backup dir for basebackup on master
+   file: path={{basebackup_dir}} owner=postgres group=postgres mode=0700 state=directory
+
+ - name: Take basebackup, output each data directory to a separate TAR archive
+   command: pg_basebackup -h {{replication.standby.master_host}} -U {{replication.user}} -Ft -R -v -D {{basebackup_dir}} 
+   sudo: yes
+   sudo_user: postgres
+
+ # Restore basebackup here (standby node)
+ 
+ #- wait_for: path=/tmp/restore-basebackup state=present
+ 
+ - name: List tablespace oids found in basebackup
+   shell: cd {{basebackup_dir}} && ls -1| awk '/^[1-9][0-9]*\.tar/{sub(/\.tar$/, ""); print}'
+   register: tablespace_oids
+
+ - name: Remove existing data directories
+   file: path={{item}} state=absent
+   with_items: '{{[data_dir] + (postgres.tablespaces| map(attribute="path")| list)}}'
+
+ - name: Create empty data directories 
+   file: path={{item}} state=directory owner=postgres group=postgres mode=0700
+   with_items: '{{[data_dir] + (postgres.tablespaces| map(attribute="path")| list)}}'
+
+ - name: Unpack root backup into main data directory
+   shell: cd {{data_dir}} && tar xvf {{basebackup_dir}}/base.tar
+   sudo: yes
+   sudo_user: postgres
+ 
+ - name: Unpack tablespace backups into their directories
+   shell: cd {{data_dir}}/pg_tblspc/{{item}} && tar xvf {{basebackup_dir}}/{{item}}.tar
+   sudo: yes
+   sudo_user: postgres
+   with_items: tablespace_oids.stdout_lines
+
+ - name: Edit recovery.conf for standby
+   lineinfile:
+     create: no
+     state: present
+     dest: '{{data_dir}}/recovery.conf'
+     line: "{{item.key}} = '{{item.value}}'"
+     regexp: '^{{item.key}}[ ]*='
+     insertafter: EOF
+   sudo: yes
+   sudo_user: postgres
+   with_dict:
+     standby_mode: 'on'
+     trigger_file: 'trigger-failover'
+     restore_command: 'rsync 
+       --password-file={{config_dir}}/rsync-password 
+       rsync://postgres@{{replication.standby.master_host}}/postgresql-archive/%f %p'
+
+ # Cleanup
+   
+ - name: Remove basebackup archives
+   file: path={{basebackup_dir}} state=absent
+

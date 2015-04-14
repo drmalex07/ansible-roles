@@ -1,20 +1,10 @@
 ---
 
-  #
   # Create databases
-  # 
- 
-  - shell: psql -A -F ',' -R '$' -t -c '\l'| awk -F ',' -v 'RS=$' -- '{print $1}'
-    sudo: yes
-    sudo_user: postgres
-    register: psql_l_result
   
-  - set_fact:
-      existing_databases: '{{psql_l_result.stdout_lines}}'
-  - debug: var=existing_databases
- 
   - name: Create databases
-    command: psql -c 'CREATE DATABASE {{item.name}} OWNER "{{item.owner}}" TABLESPACE {{item.tablespace| default("DEFAULT")}}' 
+    command: "psql 
+      -c 'CREATE DATABASE {{item.name}} OWNER \"{{item.owner}}\" TABLESPACE {{item.tablespace| default(\"DEFAULT\")}}'" 
     sudo: yes
     sudo_user: postgres
     with_items: postgres.databases
@@ -38,16 +28,21 @@
     sudo_user: postgres
     with_nested:
     - postgres.databases
-    - ['spatial_ref_sys', 'geometry_columns']
+    - 
+      - 'spatial_ref_sys'
+      - 'geometry_columns'
+      - 'geography_columns'
+      - 'raster_columns'
+      - 'raster_overviews'
     when: '{{"postgis" in item.0.extensions}}'
 
-  #
   # Define default privileges
   # Note: This must be done before creating any objects inside the databases!
-  #
 
   - name: Grant default read priviledges to entire schemata
-    command: psql -c 'ALTER DEFAULT PRIVILEGES FOR ROLE "{{item.0.owner}}" IN SCHEMA public GRANT SELECT ON TABLES TO "{{item.1}}"' '{{item.0.name}}'
+    command: "psql 
+      -c 'ALTER DEFAULT PRIVILEGES FOR ROLE \"{{item.0.owner}}\" IN SCHEMA public GRANT SELECT ON TABLES TO \"{{item.1}}\"'
+      -d '{{item.0.name}}'"
     sudo: yes
     sudo_user: postgres
     with_subelements_if_exist:
@@ -55,27 +50,42 @@
     - readers
 
   - name: Grant default read/write priviledges to entire schemata
-    command: psql -c 'ALTER DEFAULT PRIVILEGES FOR ROLE "{{item.0.owner}}" IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON TABLES TO "{{item.1}}"' '{{item.0.name}}'
+    command: "psql 
+      -c 'ALTER DEFAULT PRIVILEGES FOR ROLE \"{{item.0.owner}}\" IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON TABLES TO \"{{item.1}}\"'
+      -d '{{item.0.name}}'"
     sudo: yes
     sudo_user: postgres
     with_subelements_if_exist:
     - postgres.databases
     - writers
 
-  #
-  # Initialize databases running custom (DDL?) SQL scripts 
-  #
+  # Initialize databases running user-provided (DDL?) SQL scripts 
+  # Note: The detailed results can be found at /var/tmp.
 
-  - name: Copy init scripts to target machine
-    copy: src={{item.1}} dest=/tmp/{{(item.0.name ~ '$' ~ item.1)| md5}}.sql owner=postgres
+  - name: Copy SQL init scripts to target host
+    copy: 
+      src: "{{item.1.local_path}}"
+      dest: "/var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.sql"
+      owner: postgres
+      group: postgres
     with_subelements_if_exist: 
     - postgres.databases
     - initialize 
-
-  - name: Source init scripts into target database
-    command: psql -a -1 -f /tmp/{{(item.0.name ~ '$' ~ item.1)| md5}}.sql {{item.0.name}}
+  
+  - name: Feed SQL init scripts into target database
+    shell: "psql 
+      -a {{'-1' if item.1.single_transaction else ''}}
+      -f /var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.sql
+      -L /var/tmp/{{item.0.name}}.out.log
+      -d {{item.0.name}} 
+      1>/var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.out.log
+      2>/var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.err.log"
+    register: psql_i_result
     sudo: yes
     sudo_user: postgres
     with_subelements_if_exist: 
     - postgres.databases
     - initialize
+   
+  # Todo: Check (and warn) if errors are reported at *.err.log 
+
