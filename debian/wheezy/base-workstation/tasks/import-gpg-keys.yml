@@ -13,7 +13,6 @@
     script: scripts/import-gpg-keys.sh {{exported_gpg_keys.stdout}}
     sudo: yes
     sudo_user: "{{user.name}}"
-    when: "{{user and export_gpg_keys}}"
 
   - name: Cleanup local GPG export
     local_action: file path={{exported_gpg_keys.stdout}} state=absent

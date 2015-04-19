@@ -12,11 +12,11 @@
     copy: src=~/.ssh/{{item.key_file}}.pub dest=~/.ssh/id_rsa-{{item.name}}.pub mode=0644
     sudo: yes
     sudo_user: '{{user.name}}'
-    with_items: private_keys
+    with_items: user.private_keys| default([])
  
   - name: Copy RSA private keys for user
     copy: src=~/.ssh/{{item.key_file}} dest=~/.ssh/id_rsa-{{item.name}} mode=0600
     sudo: yes
     sudo_user: '{{user.name}}'
-    with_items: private_keys
+    with_items: user.private_keys| default([])
 

@@ -14,20 +14,5 @@
     pip: name={{item}} virtualenv=~/pyenv
     sudo: yes
     sudo_user: '{{user.name}}'
-    with_items:
-    - 'argparse'
-    - 'pytz'
-    - 'isodate'
-    - 'ipython'
-    - 'jinja2'
-    - 'genshi'
-    - 'lxml'
-    - 'pudb'
-    - 'nose'
-    - 'pep8'
-    - 'pylons'
-    - 'zope.dottedname'
-    - 'zope.component==4.1.0'
-    - 'zope.interface==4.0.1'
-    - 'zope.schema==4.4.0'
+    with_items: user.pyenv.packages| default(['ipython'])
 

@@ -2,27 +2,71 @@
 # Provide defaults for the base-workstation.
 # The variables below can be overriden at a group or host level.
 
+hostname: ~
+
 # Define a normal (sudo-capable) user to be created at the target machine
 user: ~
 #user:
 #  name: malex
 #  full_name: Michail Alexakis
 #  email: drmalex07@gmail.com
+#  # Provide a list of local private keys (under ~/.ssh) to be copied to the
+#  # home directory of the normal user at the target machine
+#  private_keys:
+#  - name: github
+#    uri: https://github.com
+#    key_file: id_rsa-github
+#  - name: bitbucket
+#    uri: https://bitbucket.org
+#    key_file: id_rsa-bitbucket
+#  # Export local GPG keys to the target machine
+#  export_gpg_keys: false
+#  pyenv:
+#    packages: 
+#      - 'argparse'
+#      - 'pytz'
+#      - 'isodate'
+#      - 'ipython'
+#      - 'jinja2'
+#      - 'genshi'
+#      - 'lxml'
+#      - 'pudb'
+#      - 'nose'
+#      - 'pep8'
+#      - 'pylons'
+#      - 'zope.dottedname'
+#      - 'zope.component==4.1.0'
+#      - 'zope.interface==4.0.1'
+#      - 'zope.schema==4.4.0'
 
-
-# Provide a list of local private keys (under ~/.ssh) to be copied to the
-# home directory of the normal user at the target machine
-private_keys: []
-#private_keys:
-#- name: github
-#  uri: https://github.com
-#  key_file: id_rsa-github
-#- name: bitbucket
-#  uri: https://bitbucket.org
-#  key_file: id_rsa-bitbucket
-
-# Export local GPG keys to the target machine
-export_gpg_keys: false
+apt:
+  use_backports: yes
+  packages:
+    # Essentials 
+    basic:   
+      - sudo
+      - vim
+      - vim-scripts
+      - bzip2
+      - p7zip-full
+      - screen
+      - less
+      - wget
+      - curl
+      - rsync
+      - git
+      - mercurial
+      - htop
+    # Development
+    development:
+      - build-essential
+      - zlib1g-dev
+      - libxslt1-dev
+      - libxml2-dev
+      - python-dev
+      - python-virtualenv
+      - python-setuptools
+      - ipython
 
 # Preferences for programs and shells
 prefs:

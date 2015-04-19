@@ -1,61 +1,42 @@
 ---
 
+  - name: Change hostname if one is provided
+    hostname: name={{hostname}}
+    when: hostname 
+  
   #
   # Install APT Packages
   #
   
   - name: Add APT repository for wheezy-backports
     copy: src=etc/apt/sources.list.d/wheezy-backports.list dest=/etc/apt/sources.list.d/wheezy-backports.list mode=0644
+    when: apt.use_backports
 
   - name: Update APT index
     apt: update_cache=yes
 
-  - name: Install basic utilities
+  - name: Install basic APT packages
     apt: pkg={{item}} state=latest
-    with_items:
-    - sudo
-    - vim
-    - vim-scripts
-    - bzip2
-    - p7zip-full
-    - screen
-    - less
-    - wget
-    - curl
-    - rsync
-    - git
-    - mercurial
-    - htop
-  
-  - name: Install basic development packages
+    with_items: apt.packages.basic
+   
+  - name: Install APT packages needed for development
     apt: pkg={{item}} state=latest
-    with_items:
-    - build-essential
-    - zlib1g-dev
-    - libxslt1-dev
-    - libxml2-dev
-
-  - name: Install Python-related packages
-    apt: pkg={{item}} state=latest
-    with_items:
-    - python-dev
-    - python-virtualenv
-    - python-setuptools
-    - ipython
+    with_items: apt.packages.development
 
   #
   # Setup user profiles and basic directories
   #
 
-  - group: name=testers
-
-  - group: name=wheel
+  - group: name={{item}}
+    with_items:
+    - testers
+    - wheel
     
   - name: Configure sudo
     copy: src=etc/sudoers.d/ dest=/etc/sudoers.d/
 
   - name: Create a sudo-capable user account
-    user: name={{user.name}} createhome=yes shell=/bin/bash groups=sudo,testers,wheel append=yes
+    user: name={{user.name}} createhome=yes shell=/bin/bash groups=sudo,wheel append=yes
     when: user
 
   - name: Create bash profile for root
@@ -78,7 +59,7 @@
   #
   
     include: create-virtualenv.yml
-    when: user
+    when: user and user.pyenv
 
   #
   # Configure Git client
@@ -105,7 +86,7 @@
   #
     
     include: import-gpg-keys.yml
-    when: user and export_gpg_keys
+    when: user and user.export_gpg_keys
  
   #
   # Configure Vim
@@ -113,33 +94,21 @@
 
   - name: Copy vimrc for root
     copy: src=etc/vim/vimrc dest=/root/.vimrc mode=0644
-    register: result 
-  - template: src=result.json dest=/tmp/copied-root-vimrc.json
   
   - name: Copy vimrc for user
     copy: src=etc/vim/vimrc dest=~/.vimrc mode=0644
     sudo: yes
     sudo_user: '{{user.name}}'
-    register: result
     when: user
   
-  - template: src=result.json dest=/tmp/copied-{{user.name}}-vimrc.json
-    when: user
-  
-  - name: Rsync vim files for root
+  - name: Sync vim files for root
     synchronize: src=etc/vim/vim/ dest=/root/.vim/ owner=no group=no
-    register: result
-  - template: src=result.json dest=/tmp/copied-root-vim.json
   
-  - name: Rsync vim files for user
+  - name: Sync vim files for user
     synchronize: src=etc/vim/vim/ dest=/home/{{user.name}}/.vim/ owner=no group=no
-    register: result
     when: user
   
-  - file: path=/home/{{user.name}}/.vim/ recurse=yes state=directory owner={{user.name}} group={{user.name}}
+  - name: Set ownership for user-local vim files
+    file: path=/home/{{user.name}}/.vim/ recurse=yes state=directory owner={{user.name}} group={{user.name}}
     when: user
   
-  - template: src=result.json dest=/tmp/copied-{{user.name}}-vim.json
-    when: user
-  
-
