@@ -14,5 +14,5 @@
     pip: name={{item}} virtualenv=~/pyenv
     sudo: yes
     sudo_user: '{{user.name}}'
-    with_items: user.pyenv.packages| default(['ipython'])
+    with_items: user.pyenv.packages
 

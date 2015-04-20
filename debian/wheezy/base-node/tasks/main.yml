@@ -15,14 +15,13 @@
   - name: Update APT index
     apt: update_cache=yes
 
-  - name: Install basic APT packages
-    apt: pkg={{item}} state=latest
-    with_items: apt.packages.basic
-   
-  - name: Install APT packages needed for development
-    apt: pkg={{item}} state=latest
-    with_items: apt.packages.development
-
+  - name: Install selected APT packages
+    apt: pkg={{item.1}} state=latest
+    with_subelements_if_exist: 
+    - apt.package_groups
+    - 'packages'
+    when: item.0.select| default(true)
+    
   #
   # Setup user profiles and basic directories
   #
@@ -58,7 +57,7 @@
   # Create a Python virtualenv for user
   #
   
-    include: create-virtualenv.yml
+  - include: create-virtualenv.yml
     when: user and user.pyenv
 
   #
@@ -78,14 +77,14 @@
   # Configure SSH
   #
 
-    include: configure-ssh-client.yml
+  - include: configure-ssh-client.yml
     when: user
 
   #
   # Import GPG keys
   #
     
-    include: import-gpg-keys.yml
+  - include: import-gpg-keys.yml
     when: user and user.export_gpg_keys
  
   #
