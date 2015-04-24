@@ -1,26 +1,24 @@
 ---
-
-  - name: Change hostname if one is provided
-    hostname: name={{hostname}}
-    when: hostname 
-  
+   
   #
   # Install APT Packages
   #
   
-  - name: Add APT repository for wheezy-backports
-    copy: src=etc/apt/sources.list.d/wheezy-backports.list dest=/etc/apt/sources.list.d/wheezy-backports.list mode=0644
-    when: apt.use_backports
-
-  - name: Update APT index
-    apt: update_cache=yes
-
-  - name: Install selected APT packages
-    apt: pkg={{item.1}} state=latest
-    with_subelements_if_exist: 
-    - apt.package_groups
-    - 'packages'
-    when: item.0.select| default(true)
+  - name: Install required APT packages
+    apt: pkg={{item}} state=latest
+    with_items: 
+    - wget 
+    - screen
+    - less
+    - tree
+    - htop
+    - git
+    - vim
+    - vim-scripts
+    - python
+    - python-dev
+    - python-doc
+    - python-virtualenv
     
   #
   # Setup user profiles and basic directories
@@ -44,10 +42,6 @@
   - name: Create bash profile for user 
     template: src=etc/user-profile dest="/home/{{user.name}}/.profile" mode=0600 owner={{user.name}} group={{user.name}}
     when: user
-     
-  - name: Create a user-local directories
-    file: path=/home/{{user.name}}/var state=directory mode=0755 owner={{user.name}} group={{user.name}}
-    when: user
   
   - name: Create a user-local workspace
     file: path=/home/{{user.name}}/workspace state=directory mode=0755 owner={{user.name}} group={{user.name}}
@@ -65,12 +59,15 @@
   #
   
   - name: Configure Git for user
-    copy: src=etc/gitconfig dest=~/.gitconfig 
+    copy: src={{item}} dest=~/.gitconfig 
     sudo: yes
     sudo_user: '{{user.name}}'
+    with_first_found:
+    - files/etc/gitconfig
+    - etc/gitconfig
     when: user
 
-  - name: Provide bash completion for git
+  - name: Provide Bash completion for Git
     get_url: url={{git_completion_script}} dest=/etc/bash_completion.d/git force=no mode=0644
 
   #

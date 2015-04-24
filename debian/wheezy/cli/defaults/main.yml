@@ -1,0 +1,59 @@
+---
+
+# Provide a list of private keys to be copied to ~/.ssh of the remote user
+# of the active playbook (usually root).
+private_keys: []
+#private_keys:
+#- name: github
+#  key_file: id_rsa-github
+#- name: bitbucket
+#  key_file: id_rsa-bitbucket
+
+authorized_keys: []
+#authorized_keys:
+#- name: malex
+#  key_file: id_rsa-malex
+
+# Define a normal (sudo-capable) user to be created at the target machine
+user: ~
+#user:
+#  name: malex
+#  full_name: Michail Alexakis
+#  email: drmalex07@gmail.com
+#  # Provide a list of authorized keys for user
+#  authorized_keys:
+#  - name: malex
+#    key_file: id_rsa-malex
+#  # Provide a list of local private keys to be copied to the home directory 
+#  # of the this user on the target machine
+#  private_keys:
+#  - name: github
+#    key_file: id_rsa-github
+#  - name: bitbucket
+#    key_file: id_rsa-bitbucket
+#  # Export local GPG keys to the target machine
+#  export_gpg_keys: false
+#  pyenv:
+#    packages: 
+#    - 'argparse'
+#    - 'pytz'
+#    - 'isodate'
+#    - 'ipython'
+#    - 'jinja2'
+#    - 'genshi'
+#    - 'lxml'
+#    - 'pudb'
+#    - 'nose'
+#    - 'pep8'
+#    - 'pylons'
+#    - 'zope.dottedname'
+#    - 'zope.component==4.1.0'
+#    - 'zope.interface==4.0.1'
+#    - 'zope.schema==4.4.0'
+
+# Preferences for programs
+prefs:
+  bash:
+    history_size: 8000
+    history_file_size: 50000
+

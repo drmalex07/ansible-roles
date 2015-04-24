@@ -1,0 +1,38 @@
+---
+# The variables below can be overriden at a group or host level.
+
+hostname: ~
+
+apt:
+  use_backports: yes
+  package_groups:
+    basic:
+      name: Basic
+      packages:
+      - sudo
+      - vim
+      - vim-scripts
+      - bzip2
+      - p7zip-full
+      - screen
+      - less
+      - wget
+      - curl
+      - rsync
+      - git
+      - mercurial
+      - htop
+    development:
+      name: Development
+      select: yes
+      packages:
+      - build-essential
+      - zlib1g-dev
+      - libxslt1-dev
+      - libxml2-dev
+      - python-dev
+      - python-virtualenv
+      - python-setuptools
+      - ipython
+
+

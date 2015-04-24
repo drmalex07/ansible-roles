@@ -1,0 +1,11 @@
+Host *
+    ForwardAgent no
+    ForwardX11 no
+    ForwardX11Trusted yes
+    PasswordAuthentication yes
+    PreferredAuthentications publickey,password
+    SendEnv LANG LC_*
+    HashKnownHosts yes
+    GSSAPIAuthentication yes
+    GSSAPIDelegateCredentials no
+

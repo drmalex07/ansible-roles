@@ -1,0 +1,42 @@
+---
+  
+  - name: Copy authorized keys for root
+    authorized_key: 
+      user: root
+      key: '{{lookup("file", "files/keys/" ~ item.key_file ~ ".pub")}}'
+    with_items: authorized_keys| default([])
+   
+  - name: Copy authorized keys for user
+    authorized_key: 
+      user: '{{user.name}}'
+      key: '{{lookup("file", "files/keys/" ~ item.key_file ~ ".pub")}}'
+    with_items: user.authorized_keys| default([])
+
+  # Todo: 
+  # Assemble host-based ssh_config from vars (for both root and user)
+ 
+  - name: Configure SSH client for user
+    copy: src=etc/ssh/ssh_config dest=~/.ssh/config mode=0640
+    sudo: yes
+    sudo_user: '{{user.name}}'
+  
+  - name: Copy public keys for root
+    copy: src=files/keys/{{item.key_file}}.pub dest=~/.ssh/{{item.key_file}}.pub mode=0644
+    with_items: private_keys| default([])
+ 
+  - name: Copy private keys for root
+    copy: src=files/keys/{{item.key_file}} dest=~/.ssh/{{item.key_file}} mode=0600
+    with_items: private_keys| default([])
+  
+  - name: Copy public keys for user
+    copy: src=files/keys/{{item.key_file}}.pub dest=~/.ssh/{{item.key_file}}.pub mode=0644
+    sudo: yes
+    sudo_user: '{{user.name}}'
+    with_items: user.private_keys| default([])
+ 
+  - name: Copy private keys for user
+    copy: src=files/keys/{{item.key_file}} dest=~/.ssh/{{item.key_file}} mode=0600
+    sudo: yes
+    sudo_user: '{{user.name}}'
+    with_items: user.private_keys| default([])
+
