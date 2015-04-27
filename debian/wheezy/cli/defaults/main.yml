@@ -14,6 +14,26 @@ authorized_keys: []
 #- name: malex
 #  key_file: id_rsa-malex
 
+# Provide configuration for SSH client: Each host item can specify
+# keys as described at `ssh_config` module. 
+# See https://github.com/drmalex07/ansible-modules/blob/master/system/ssh_config.py
+ssh_config: []
+#ssh_config:
+#- name: '*.example.com'
+#  hostname: 'sh.example.com'
+#  user: root
+#  port: 22
+#  preferred_authentications: ['publickey', 'password']
+#  strict_host_key_checking: 'ask' 
+#  identity_file: '~/.ssh/id_rsa'
+#- name: 'baz.example.com'
+#  user: 'baz'
+#  port: 10122
+#  preferred_authentications: 'publickey'
+#  strict_host_key_checking: 'no' 
+#  identity_file: '~/.ssh/id_rsa-baz'
+#  local_forward: '5433 127.0.0.1:5432'
+
 # Define a normal (sudo-capable) user to be created at the target machine
 user: ~
 #user:
@@ -31,6 +51,8 @@ user: ~
 #    key_file: id_rsa-github
 #  - name: bitbucket
 #    key_file: id_rsa-bitbucket
+#  # Provide configuration for SSH client (see top-level ssh_config)
+#  ssh_config: [] 
 #  # Export local GPG keys to the target machine
 #  export_gpg_keys: false
 #  pyenv:

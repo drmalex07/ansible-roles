@@ -12,13 +12,19 @@
       key: '{{lookup("file", "files/keys/" ~ item.key_file ~ ".pub")}}'
     with_items: user.authorized_keys| default([])
 
-  # Todo: 
-  # Assemble host-based ssh_config from vars (for both root and user)
- 
+  - name: Configure SSH client for root
+    ssh_config:
+      name: '{{item.name}}'
+      opts: '{{item}}'
+    with_items: ssh_config| default([])
+  
   - name: Configure SSH client for user
-    copy: src=etc/ssh/ssh_config dest=~/.ssh/config mode=0640
+    ssh_config:
+      name: '{{item.name}}'
+      opts: '{{item}}'
     sudo: yes
     sudo_user: '{{user.name}}'
+    with_items: user.ssh_config| default([])
   
   - name: Copy public keys for root
     copy: src=files/keys/{{item.key_file}}.pub dest=~/.ssh/{{item.key_file}}.pub mode=0644
