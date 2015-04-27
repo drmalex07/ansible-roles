@@ -75,7 +75,6 @@
   #
 
   - include: configure-ssh-client.yml
-    when: user
 
   #
   # Import GPG keys
