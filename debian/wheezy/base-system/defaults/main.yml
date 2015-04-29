@@ -12,16 +12,17 @@ apt:
       - sudo
       - vim
       - vim-scripts
-      - bzip2
-      - p7zip-full
       - screen
       - less
+      - bash-completion
       - wget
       - curl
       - rsync
       - git
       - mercurial
       - htop
+      - bzip2
+      - p7zip-full
     development:
       name: Development
       select: yes
