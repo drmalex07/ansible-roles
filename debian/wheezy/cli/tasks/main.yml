@@ -7,7 +7,9 @@
   - name: Install required APT packages
     apt: pkg={{item}} state=latest
     with_items: 
+    - sudo
     - wget 
+    - ca-certificates
     - screen
     - less
     - bash-completion
@@ -59,23 +61,28 @@
   # Configure Git client
   #
   
-  - name: Configure Git for user
-    copy: src={{item}} dest=~/.gitconfig 
+  - name: Provide system-wide configuration for Git
+    template: src=etc/gitconfig dest=/etc/gitconfig
+    when: git_config
+    tags: ['git-config']
+  
+  - name: Provide user-wide configuration for Git
+    template: src=etc/user-gitconfig dest=~/.gitconfig
     sudo: yes
     sudo_user: '{{user.name}}'
-    with_first_found:
-    - files/etc/gitconfig
-    - etc/gitconfig
-    when: user
+    when: user and user.git_config and user.git_config.user
+    tags: ['git-config']
 
   - name: Provide Bash completion for Git
     get_url: url={{git_completion_script}} dest=/etc/bash_completion.d/git force=no mode=0644
+    tags: ['git-config']
 
   #
   # Configure SSH
   #
 
   - include: configure-ssh-client.yml
+    tags: ['ssh-config']
 
   #
   # Import GPG keys
@@ -83,6 +90,7 @@
     
   - include: import-gpg-keys.yml
     when: user and user.export_gpg_keys
+    tags: ['gpg', 'gnupg']
  
   #
   # Configure Vim
@@ -90,21 +98,26 @@
 
   - name: Copy vimrc for root
     copy: src=etc/vim/vimrc dest=/root/.vimrc mode=0644
+    tags: ['vim']
   
   - name: Copy vimrc for user
     copy: src=etc/vim/vimrc dest=~/.vimrc mode=0644
     sudo: yes
     sudo_user: '{{user.name}}'
     when: user
+    tags: ['vim']
   
   - name: Sync vim files for root
     synchronize: src=etc/vim/vim/ dest=/root/.vim/ owner=no group=no
+    tags: ['vim']
   
   - name: Sync vim files for user
     synchronize: src=etc/vim/vim/ dest=/home/{{user.name}}/.vim/ owner=no group=no
     when: user
+    tags: ['vim']
   
   - name: Set ownership for user-local vim files
     file: path=/home/{{user.name}}/.vim/ recurse=yes state=directory owner={{user.name}} group={{user.name}}
     when: user
+    tags: ['vim']
   

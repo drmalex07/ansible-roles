@@ -1,0 +1,7 @@
+{% if user.git_config.user.name and user.git_config.user.email -%}
+[user]
+
+  email = {{user.git_config.user.email}}
+  name = {{user.git_config.user.name}}
+
+{%- endif %}

@@ -34,6 +34,14 @@ ssh_config: []
 #  identity_file: '~/.ssh/id_rsa-baz'
 #  local_forward: '5433 127.0.0.1:5432'
 
+git_config: ~
+#git_config:
+#  user: 
+#    name: someone
+#    email: someone@example.com
+#  merge_tool: meld
+#  diff_tool: meld
+
 # Define a normal (sudo-capable) user to be created at the target machine
 user: ~
 #user:
@@ -72,6 +80,10 @@ user: ~
 #    - 'zope.component==4.1.0'
 #    - 'zope.interface==4.0.1'
 #    - 'zope.schema==4.4.0'
+#  git_config:
+#    user:
+#      name: drmalex07
+#      email: alexakis@imis.athena-innovation.gr 
 
 # Preferences for programs
 prefs:

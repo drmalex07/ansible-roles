@@ -17,6 +17,7 @@ apt:
       - bash-completion
       - wget
       - curl
+      - ca-certificates
       - rsync
       - git
       - mercurial
