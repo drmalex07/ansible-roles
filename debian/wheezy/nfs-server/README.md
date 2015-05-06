@@ -4,8 +4,9 @@ Setup an NFS server, configure exported directories.
 
 ### Examples
 
-A minimal example would be:
+A example playbook would be:
 ```yaml
+
 - hosts: nfs.local 
   remote_user: root
   
@@ -14,9 +15,9 @@ A minimal example would be:
       exports:
       - path: '/var/local/data-1'
         clients:
-        - hostname: 'venus.local'
+        - host: 'venus.local'
           options: {}
-        - hostname: 'mars.local'
+        - host: 'mars.local'
           options:
             squash: 'all'
             anon_user: 'martian'
@@ -24,4 +25,5 @@ A minimal example would be:
 
   roles:
   - nfs-server
+
 ```

@@ -13,17 +13,17 @@ nfs:
 #  exports:
 #  - path: '/var/local/data-1'
 #    clients:
-#    - hostname: 'monitor.publicamundi.local'
+#    - host: 'monitor.local'
 #      options:
 #        readonly: yes 
 #        squash: root
 #        subtree_check: yes
 #        sync: yes
-#    - hostname: 'admin.publicamundi.local'
+#    - host: 'admin.local'
 #      options: {}
 #  - path: '/var/local/backups'
 #    clients:
-#    - hostname: 'admin.publicamundi.local'
+#    - host: 'admin.local'
 #      options:
 #        sync: no
 #        squash: 'all'

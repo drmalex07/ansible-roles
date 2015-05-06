@@ -1,8 +1,11 @@
 #!/usr/bin/python
 
 # NOTE
-# This module only recognizes exports formatted as <path> <host>(<opts>). So,
-# a line with multiple host descriptors per path will not be recognized correctly.
+# This module has the following limitations:
+#  * Recognizes exports formatted as <path> <host>(<opts>). So, a line
+#    with multiple host descriptors per path wont be recognized correctly.
+#  * Assumes a <host> is either a real hostname, an ip address, or a CIDR
+#    network. So, a hostname wildcard or a NIS netgroup wont br recognized.
 
 DOCUMENTATION='''
 module: nfs_export
@@ -18,8 +21,8 @@ options:
   path:
     description: The exported directory path
     required: yes
-  hostname:
-    description: The client's hostname 
+  host:
+    description: The client's host 
     required: yes
   readonly: 
     description: |
@@ -67,11 +70,22 @@ options:
 
 EXAMPLES='''
 
-- nfs_export: path=/var/local/data-1 hostname=somehost.local squash=none readonly=yes
+# Provide a real (resolvable) hostname  
+- nfs_export: path=/var/local/data-1 host=somehost.local squash=none readonly=yes
 
+# Provide an IP address
+- nfs_export: path=/var/local/data-1 host=10.0.2.15 squash=none readonly=no
+
+# Provide a CIDR IPv4 vnetwork 
+- nfs_export: path=/var/local/data-1 host=10.0.2.15/24 squash=none readonly=no
+
+# Provide an IPV6 or an IPv6 network 
+- nfs_export: path=/var/local/data-1 host=2001:648:2ffc:1225:a800:cff:fe02:d983/126 squash=all readonly=no
+
+# Example with non-inline module arguments
 - nfs_export: 
     path: /var/local/backups 
-    hostname: tape.local
+    host: tape.local
     sync: yes
     squash: all
     anon_user: backup
@@ -84,7 +98,7 @@ import re
 import pwd
 import grp
 import io
-from socket import gethostbyname
+import socket
 from collections import OrderedDict
 from tempfile import NamedTemporaryFile
 
@@ -134,12 +148,44 @@ def build_export_opts(p):
 
     return opts
 
+def verify_host(host):
+    
+    # Split prefix length part (if exists)
+    try:
+        addr, prefix = host.split('/', 1)
+    except:
+        addr, prefix = host, None
+    else:
+        try:
+            prefix = int(prefix)
+        except:
+            return False
+
+    # Try to resolve as an IPv4 hostname/address
+    try:
+        addrinfo = socket.getaddrinfo(addr, None, socket.AF_INET)
+    except:
+        pass 
+    else:
+        return ((prefix <= 32) and (prefix > 0)) if prefix else True
+    
+    # Try to resolve as an IPv6 hostname/address
+    try:
+        addrinfo = socket.getaddrinfo(addr, None, socket.AF_INET6)
+    except:
+        pass 
+    else:
+        return ((prefix <= 128) and (prefix > 0)) if prefix else True
+
+    # Cannot recognize 
+    return False
+
 def main():
     module = AnsibleModule(
         argument_spec = dict(
            dest = dict(default='/etc/exports'),
            path = dict(required=True),
-           hostname = dict(required=True),
+           host = dict(required=True),
            readonly = dict(type='bool', default=False),
            secure = dict(type='bool', default=True),
            sync = dict(type='bool', default=True),
@@ -159,11 +205,8 @@ def main():
     if not os.path.isdir(path): 
         raise ValueError('The given path %s is not a directory' % (path))
 
-    hostname = p.get('hostname')
-    try:
-        addr = gethostbyname(hostname)
-    except Exception as ex:
-        raise ValueError('Cannot resolve the given name (%s)' % (hostname))
+    host = p.get('host')
+    assert verify_host(host), 'The host %s doesnt seem valid' % (host)
 
     # Build options
 
@@ -172,7 +215,7 @@ def main():
     # Generate entry suitable for /etc/exports
 
     export_opts = ['%s=%s' %(k, v) if v else k for k, v in opts.items()]
-    line = '%s %s(%s)\n' % (path, hostname, ','.join(export_opts))
+    line = '%s %s(%s)\n' % (path, host, ','.join(export_opts))
     
     # Read target file and replace matching line
     
@@ -191,9 +234,9 @@ def main():
             if not path == path1.rstrip('/'):
                 ofp.write(line1) # copy verbatim
                 continue
-            m1 = re.match('([\w][-\w\.]+)\(.*\)', rest1)
-            assert m1, 'Cannot recognize client spec for %s: %s' % (path1, rest1)
-            if hostname == m1.group(1):
+            m1 = re.match('([:\w][^()\s]+)\(.*\)', rest1)
+            assert m1, 'Cannot parse host specifier for %s: %s' % (path1, rest1)
+            if host == m1.group(1):
                 ofp.write(line) # replace match
                 matched = True
                 changed = (line1 != line)
@@ -211,7 +254,7 @@ def main():
     module.exit_json(
         changed = changed, 
         path = path,
-        hostname = hostname,
+        host = host,
         target = target_config_file if not dry_run else ofp.name,
         params = p)
 
