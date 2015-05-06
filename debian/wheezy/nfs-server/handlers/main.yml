@@ -1,0 +1,11 @@
+---
+
+ - name: restart-nfs-server
+   service: name=nfs-kernel-server state=restarted
+
+ - name: export-nfs-directories
+   command: exportfs -a
+ 
+ - name: reexport-nfs-directories
+   command: exportfs -a -r
+ 

@@ -1,0 +1,25 @@
+---
+
+ # Install APT packages
+
+ - name: Install NFS server
+   apt: pkg={{item}} state=latest
+   with_items: ['nfs-common', 'nfs-kernel-server']
+
+ # Configure exports
+ 
+ - name: Generate entries for /etc/exports
+   nfs_export:
+     path: '{{item.0.path}}'
+     hostname: '{{item.1.hostname}}'
+     readonly: '{{item.1.options.readonly| default(nfs.defaults.export_options.readonly)}}'
+     subtree_check: '{{item.1.options.subtree_check| default(nfs.defaults.export_options.subtree_check)}}'
+     secure: '{{item.1.options.secure| default(nfs.defaults.export_options.secure)}}'
+     sync: '{{item.1.options.sync| default(nfs.defaults.export_options.sync)}}'
+     squash: '{{item.1.options.squash| default(nfs.defaults.export_options.squash)}}'
+     anon_user: '{{item.1.options.anon_user| default(none)}}'
+     anon_group: '{{item.1.options.anon_group| default(none)}}'
+   with_subelements_if_exist:
+   - nfs.exports
+   - 'clients'
+   notify: ['reexport-nfs-directories']

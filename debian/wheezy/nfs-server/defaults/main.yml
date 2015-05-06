@@ -1,0 +1,34 @@
+---
+
+nfs:
+  defaults:
+    export_options: 
+      readonly: yes
+      secure: yes
+      subtree_check: yes
+      sync: yes
+      squash: 'all'
+
+  exports: []
+#  exports:
+#  - path: '/var/local/data-1'
+#    clients:
+#    - hostname: 'monitor.publicamundi.local'
+#      options:
+#        readonly: yes 
+#        squash: root
+#        subtree_check: yes
+#        sync: yes
+#    - hostname: 'admin.publicamundi.local'
+#      options: {}
+#  - path: '/var/local/backups'
+#    clients:
+#    - hostname: 'admin.publicamundi.local'
+#      options:
+#        sync: no
+#        squash: 'all'
+#        anon_user: 'backup' 
+#        anon_group: 'backup'
+#        subtree_check: yes
+
+
