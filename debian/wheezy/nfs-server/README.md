@@ -2,6 +2,10 @@
 
 Setup an NFS server, configure exported directories.
 
+### Requirements 
+
+This role depends on the `nfs_export` module which can be found under https://github.com/drmalex07/ansible-modules.
+
 ### Examples
 
 A example playbook would be:
