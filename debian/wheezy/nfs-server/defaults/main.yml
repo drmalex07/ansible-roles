@@ -13,7 +13,7 @@ nfs:
 #  exports:
 #  - path: '/var/local/data-1'
 #    clients:
-#    - host: 'monitor.local'
+#    - hosts: 'monitor.local'
 #      options:
 #        readonly: yes 
 #        squash: root
@@ -23,7 +23,7 @@ nfs:
 #      options: {}
 #  - path: '/var/local/backups'
 #    clients:
-#    - host: 'admin.local'
+#    - hosts: ['admin.local', 'tape1.local']
 #      options:
 #        sync: no
 #        squash: 'all'

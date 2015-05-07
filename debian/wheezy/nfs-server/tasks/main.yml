@@ -11,7 +11,7 @@
  - name: Generate entries for /etc/exports
    nfs_export:
      path: '{{item.0.path}}'
-     host: '{{item.1.host}}'
+     hosts: '{{item.1.hosts}}'
      readonly: '{{item.1.options.readonly| default(nfs.defaults.export_options.readonly)}}'
      subtree_check: '{{item.1.options.subtree_check| default(nfs.defaults.export_options.subtree_check)}}'
      secure: '{{item.1.options.secure| default(nfs.defaults.export_options.secure)}}'

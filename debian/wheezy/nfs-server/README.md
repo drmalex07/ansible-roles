@@ -19,13 +19,15 @@ A example playbook would be:
       exports:
       - path: '/var/local/data-1'
         clients:
-        - host: 'venus.local'
+        - hosts: 
+          - 'venus.local' 
+          - 'mars.local'
           options: {}
-        - host: 'mars.local'
+        - hosts: ['tape.local']
           options:
             squash: 'all'
-            anon_user: 'martian'
-            anon_group: 'martian'
+            anon_user: 'backup'
+            anon_group: 'backup'
 
   roles:
   - nfs-server
