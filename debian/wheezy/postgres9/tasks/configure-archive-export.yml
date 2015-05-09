@@ -19,7 +19,7 @@
       'path':  '{{archive_dir}}'
       'read only': 'yes'
       'list': 'yes'
-      'hosts allow': '{{replication.master.clients.allowed_addresses| join(" ")}}'
+      'hosts allow': '{{replication.master.clients.allowed_addresses| flatten_list| join(" ")}}'
       'auth users': 'postgres'
       'secrets file': '/etc/rsyncd.secrets'
     #notify: [restart-rsyncd]
@@ -38,4 +38,3 @@
 
   - name: Generate defaults for rsyncd daemon
     template: src=etc/default/rsync dest=/etc/default/rsync backup=yes
-    #notify: [restart-rsyncd]
