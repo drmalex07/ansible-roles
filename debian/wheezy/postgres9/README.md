@@ -118,5 +118,7 @@ postgres:
       num_wal_segments: 32
       clients:
         max_num: '{{groups["database-standby"]|length + 1}}'
-        allowed_addresses: '{{groups["database-standby"]}}'
+        allowed_addresses: # list will be flattened
+        - '127.0.0.1/8'
+        - '{{groups["database-standby"]}}'
 ```
