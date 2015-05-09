@@ -17,6 +17,7 @@
   #
 
   - service: name=postgresql state=stopped
+  - service: name=rsync state=stopped
   
   - include: configure-service.yml
 
@@ -27,8 +28,7 @@
     when: replication.role == 'standby'
  
   - service: name=postgresql state=started
-  
-  - service: name=rsync state=restarted
+  - service: name=rsync state=started
   
   #
   # Create tablespaces

@@ -60,7 +60,7 @@
     - writers
 
   # Initialize databases running user-provided (DDL?) SQL scripts 
-  # Note: The detailed results can be found at /var/tmp.
+  # Note: The results (output and error logs) can be found at /var/tmp.
 
   - name: Copy SQL init scripts to target host
     copy: 
@@ -71,13 +71,12 @@
     with_subelements_if_exist: 
     - postgres.databases
     - initialize 
+    when: item.0.name not in existing_databases
   
   - name: Feed SQL init scripts into target database
     shell: "psql 
-      -a {{'-1' if item.1.single_transaction else ''}}
-      -f /var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.sql
-      -L /var/tmp/{{item.0.name}}.out.log
-      -d {{item.0.name}} 
+      -a -v ON_ERROR_STOP=1 {{'-1' if item.1.single_transaction else ''}} -L /var/tmp/{{item.0.name}}.out.log
+      -f /var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.sql -d {{item.0.name}} 
       1>/var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.out.log
       2>/var/tmp/{{item.0.name}}-{{item.1.local_path| md5}}.err.log"
     register: psql_i_result
@@ -86,6 +85,5 @@
     with_subelements_if_exist: 
     - postgres.databases
     - initialize
+    when: item.0.name not in existing_databases
    
-  # Todo: Check (and warn) if errors are reported at *.err.log 
-

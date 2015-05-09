@@ -3,7 +3,7 @@
  - assert:
      that: 
      - replication.role == 'standby'
-     - replication.standby.master_host in hostvars.keys()
+     - replication.standby.master_host in groups.all
  
  - wait_for: host={{replication.standby.master_host}} port={{postgres.service.port}} state=started
 
