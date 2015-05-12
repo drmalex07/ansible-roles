@@ -1,6 +1,5 @@
 ---
 
-# Tomcat-related
 tomcat:
   # Define min/max for JVM's heap size
   max_heap_size: 192m
@@ -9,15 +8,19 @@ tomcat:
   # Configure service endpoint
   connector:
     port: 8983
-    address: 0.0.0.0
+    address: '0.0.0.0'
 
   manager:
     username: tomcat
     #password: tomc@t
 
-## Solr-related
 solr:
   share_dir: /usr/local/share/solr
   home_dir: /var/local/solr
-  cores:
-  - name: ckan
+  cores: []
+  #cores:
+  #- name: foo
+  #  # Provide a play-relative schema configuration file
+  #  schema_file: files/search-engine/etc/solr/foo/conf/schema.xml
+  #  # Provide either a play-relative or the default (empty) elevation file
+  #  elevate_file: etc/solr/_core/conf/elevate.xml

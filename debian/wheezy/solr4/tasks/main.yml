@@ -124,16 +124,16 @@
     command: cp -r /opt/solr/example/solr/collection1/conf {{solr.home_dir}}/{{item.name}}/
     with_items: '{{solr.cores| union([{ "name": "example"}])}}'
   
-  - name: Copy Solr`s core-specific engine configuration
+  - name: Copy Solr`s engine configuration
     template: src=etc/solr/_core/conf/solrconfig.xml dest={{solr.home_dir}}/{{item.name}}/conf/solrconfig.xml
     with_items: '{{solr.cores| union([{ "name": "example"}])}}'
  
   - name: Copy Solr`s core-specific schema configuration
-    copy: src=etc/solr/{{item.name}}/conf/schema.xml dest={{solr.home_dir}}/{{item.name}}/conf/schema.xml
+    copy: src={{item.schema_file}} dest={{solr.home_dir}}/{{item.name}}/conf/schema.xml
     with_items: '{{solr.cores}}'
   
   - name: Copy Solr`s core-specific elevate configuration
-    copy: src=etc/solr/{{item.name}}/conf/elevate.xml dest={{solr.home_dir}}/{{item.name}}/conf/elevate.xml
+    copy: src={{item.elevate_file}} dest={{solr.home_dir}}/{{item.name}}/conf/elevate.xml
     with_items: '{{solr.cores}}'
 
   - file: path={{solr.home_dir}} recurse=yes owner=root group=tomcat6 
