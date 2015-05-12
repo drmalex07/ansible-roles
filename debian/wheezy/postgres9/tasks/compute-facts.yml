@@ -16,7 +16,7 @@
     command: echo '{{item.value.network| ipv4_to_cidr(item.value.netmask)}}'
     register: ipv4_active_networks
     with_dict: ipv4_ifaces
-    when: item.value.address in postgres.service.listen_addresses
+    when: item.value and item.value.address in postgres.service.listen_addresses
   
   - set_fact: 
       ipv4_active_networks: '{{ipv4_active_networks.results| selectattr("changed")| list| map(attribute="stdout")| list}}'
@@ -25,7 +25,7 @@
   
   - set_fact:
       config_dir: '/etc/postgresql/{{postgres.version}}/main'
-      run_dir: '/var/run/postgresql/{{postgres.version}}'
+      run_dir: '/var/run/postgresql'
       archive_dir: '/var/backups/postgresql/{{postgres.version}}/archive' 
       basebackup_dir: '/var/tmp/postgresql/{{postgres.version}}/backup'
   

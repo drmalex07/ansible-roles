@@ -9,7 +9,7 @@
     file: path={{archive_dir}} state=directory owner=postgres group=postgres mode=0700
   
   - name: Create run directory
-    file: path={{run_dir}} state=directory owner=postgres group=postgres mode=0755
+    file: path={{run_dir}} state=directory owner=postgres group=postgres mode=0775
 
   # Generate configuration files
 
