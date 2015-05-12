@@ -16,7 +16,7 @@
     command: echo '{{item.value.network| ipv4_to_cidr(item.value.netmask)}}'
     register: ipv4_active_networks
     with_dict: ipv4_ifaces
-    when: item.value.address in postgres.service.listen_addresses
+    when: item.value and item.value.address in postgres.service.listen_addresses
   
   - set_fact: 
       ipv4_active_networks: '{{ipv4_active_networks.results| selectattr("changed")| list| map(attribute="stdout")| list}}'
