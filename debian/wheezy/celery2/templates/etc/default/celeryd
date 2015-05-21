@@ -1,0 +1,19 @@
+# /etc/default/celeryd
+
+WORKING_DIR={{celery.working_dir}}
+PYENV={{celery.pyenv_dir| default('')}}
+
+CELERY_CONFIG={{celery.celeryconfig_module| default('celeryconfig')}}
+CELERY_CONCURRENCY={{celery.concurrency| default(2)}}
+
+# The user/group under which the daemon must run
+RUN_AS_USER={{celery.run_as_user if celery.run_as_user else celery.user}}
+RUN_AS_GROUP={{celery.run_as_group}}
+
+# The pid file for the (master) daemon
+PIDFILE={{celery.pidfile| realpath}}
+
+# Redirect logs to logfile
+LOGFILE={{celery.logfile| realpath}}
+
+STOP_TIMEOUT={{celery.stop_timeout}}

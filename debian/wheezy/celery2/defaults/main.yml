@@ -1,0 +1,26 @@
+---
+
+celery:
+  # The user that owns the virtual enviroment (if any) and the working directory
+  user: ~
+  
+  pyenv_dir: ~
+  #pyenv_dir: /usr/local/pyenv
+
+  working_dir: /var/local/celeryd
+  
+  # Specify the dotted name (path) for the configurator Python module
+  celeryconfig_module: celeryconfig
+  #celeryconfig_module: foo.config.celeryconfig
+
+  pidfile: /var/local/celeryd/celeryd.pid
+  logfile: /var/local/celeryd/celeryd.log
+
+  concurrency: 2
+  
+  # The user to run the group of workers under (default is celery.user).
+  run_as_user: ~
+  run_as_group: daemon 
+
+  # The number of seconds to wait for the group of workers to gracefully shutdown
+  stop_timeout: 20

@@ -1,0 +1,6 @@
+---
+
+# This role should be used with celery 2.x
+
+celery:
+  version: '2.4'

@@ -1,0 +1,39 @@
+---
+
+ - debug: var=celery
+
+ - assert:
+     that: 
+     - celery.pyenv_dir
+     - celery.user and (celery.user != 'root')
+ 
+ - name: Create virtualenv, if not there
+   command: /usr/bin/virtualenv {{celery.pyenv_dir}} creates={{celery.pyenv_dir}}
+   register: virtualenv_result
+         
+ - name: Set ownership for a just-created virtualenv tree
+   file: path={{celery.pyenv_dir}} state=directory recurse=yes owner={{celery.user}} group=staff
+   when: virtualenv_result.changed
+ 
+ - name: Set ownership for working directory
+   file: path={{celery.working_dir}} state=directory mode=0774 owner={{celery.user}} group=staff
+
+ - name: Install celery into virtualenv
+   sudo: yes
+   sudo_user: '{{celery.user}}'
+   pip: 
+     name: 'celery=={{celery.version}}' 
+     state: present 
+     virtualenv: '{{celery.pyenv_dir}}'
+
+ - name: Install celeryd under /etc/init.d
+   copy: src=etc/init.d/celeryd dest=/etc/init.d/celeryd mode=0755
+
+ - name: Generate default configuration for celeryd
+   template: src=etc/default/celeryd dest=/etc/default/celeryd mode=0644
+
+ - name: Enable celeryd as an init.d service
+   service: name=celeryd enabled=yes
+
+ - name: Restart celeryd
+   service: name=celeryd state=restarted
