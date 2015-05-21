@@ -3,9 +3,18 @@
  - debug: var=celery
 
  - assert:
-     that: 
+     that:
+     - celery.version| version_compare("2.4", ">=")
+     - celery.version| version_compare("2.6", "<")
      - celery.pyenv_dir
      - celery.user and (celery.user != 'root')
+ 
+ # Install requirements
+ 
+ - name: Install requirements
+   apt: pkg=inotify-tools state=latest
+ 
+ # Install celery in virtualenv
  
  - name: Create virtualenv, if not there
    command: /usr/bin/virtualenv {{celery.pyenv_dir}} creates={{celery.pyenv_dir}}
@@ -22,9 +31,12 @@
    sudo: yes
    sudo_user: '{{celery.user}}'
    pip: 
-     name: 'celery=={{celery.version}}' 
+     name: 'celery'
+     version: '{{celery.version}}' 
      state: present 
      virtualenv: '{{celery.pyenv_dir}}'
+
+ # Install init.d scripts 
 
  - name: Install celeryd under /etc/init.d
    copy: src=etc/init.d/celeryd dest=/etc/init.d/celeryd mode=0755
