@@ -17,7 +17,11 @@ celery:
   #celeryconfig_module: foo.config.celeryconfig
 
   pidfile: /var/local/celeryd/celeryd.pid
+  
   logfile: /var/local/celeryd/celeryd.log
+  log:
+    rotation_size: 7
+    rotation_max_filesize: 64 # MiBs
 
   concurrency: 2
   

@@ -49,3 +49,10 @@
 
  - name: Restart celeryd
    service: name=celeryd state=restarted
+
+ # Configure rotation for logfiles
+
+ - name: Generate configuration directives for logrotate
+   template: src=etc/logrotate.d/celeryd dest=/etc/logrotate.d/celeryd
+
+

@@ -1,0 +1,13 @@
+{{celery.logfile}}
+{
+    su {{celery.user}} {{celery.user}}
+    create 0660
+    rotate {{celery.log.rotation_size| int| default(7)}}
+    daily
+    maxsize {{(celery.log.rotation_max_filesize| int) * (2 ** 20)}}
+    missingok
+    notifempty
+    compress
+    delaycompress
+}
+
