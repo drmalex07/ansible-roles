@@ -1,0 +1,6 @@
+---
+ 
+ - include: enable-serve-with-paster.yml
+
+ - include: start-serve-with-paster.yml
+

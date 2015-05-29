@@ -1,0 +1,167 @@
+---
+
+ckan_site_id: 'default'
+
+#
+# Base CKAN
+#
+
+ckan:
+  source:
+    # Specify source Git repository
+    repo:
+      url: 'https://github.com/ckan/ckan.git'
+      push_url: ~
+      version: 'ckan-2.2'
+  
+  # A UUID for this application instance; generate one per cluster!
+  instance_uuid: ~
+  #instance_uuid: '22d468de-2154-58ea-ac32-e5ffe8fd03b9' 
+   
+  config_name: 'development'
+  debug: 1
+  
+  # The URL under which CKAN is supposed to be accessible (will be used mainly for 
+  # sending API requests from the queue) from the outside world.
+  url: 'http://{{inventory_hostname}}:5000'
+
+  # Provide a control-local directory to keep generated secrets under
+  secrets_dir: 'files/secrets'
+
+  # Basic directories
+  pyenv_dir: '/usr/local/ckan/default/pyenv'
+  files_dir: '/var/local/ckan/default/files'
+  temp_dir: '/var/tmp/ckan/default'
+  run_dir: '/var/local/ckan/default/run'
+  log_dir: '/var/local/ckan/default/log'
+
+  # Configure virtual environment
+  pyenv:
+    # Provide packages to be installed befory any of the application requirements 
+    basic_packages:
+    - 'pudb'
+    - 'pep8'
+    - 'ipython'
+    - 'pytz'
+    - 'isodate'
+    - 'argparse'
+    - 'nose>=1.3'
+ 
+  # Provide Solr endpoint URLs 
+  solr:
+    core_url: 'http://localhost:8983/solr/ckan'
+  
+  # Provide database connection URLs
+  database:
+    url: 'postgresql://ckaner:ckaner@localhost/ckan'
+    datastore_read_url: 'postgresql://ckan_datareader:ckan_datareader@localhost/ckan_data'
+    datastore_write_url: 'postgresql://ckan_datastorer:ckan_datastorer@localhost/ckan_data'
+  
+  plugins:
+  - 'stats'
+  - 'text_preview'
+  - 'recline_preview'
+  - 'pdf_preview'
+  - 'datastore' 
+  - 'resource_proxy' 
+  
+  # Provide a JSON file with valid licenses records, either as a URL or as a local file (relative to config-file).
+  # See an example at: https://github.com/PublicaMundi/ckan/blob/dev.publicamundi.eu/licenses.json
+  licenses_url: http://licenses.opendefinition.org/licenses/groups/ckan.json
+
+  # Serve as a WSGI application
+  serve:
+    # Choose the way to deploy it: 'manual', 'apache2-mod-wsgi', 'apache2/paster' or 'paster'
+    use: 'paster'
+    # Specify the canonical hostname for this service (i.e. the virtual host)
+    name: ~
+    # name: 'catalog.example.localdomain'
+    # Specify any name aliases for this service
+    name_aliases: []
+    #name_aliases: ['ckan.example.localdomain']
+    # The URL path prefix for the application
+    url_prefix: '/'
+    # Spawn WSGI processes/threads (applicable for 'apache2-mod-wsgi')
+    wsgi_opts:
+      num_processes: 2
+      num_threads: 15
+    # The following are paster-only options (applicable for 'paster', 'apache2/paster')
+    paster_opts:
+      listen_address: '127.0.0.1'
+      port: 5000  
+
+  log:
+    rotation_max_filesize: 128 # MiBs
+    rotation_size: 14
+  
+  celery:
+    # Choose how to start daemon: 'manual', 'paster'
+    use: 'paster'
+
+  # Site info
+  site:   
+    # Basic info
+    title: Public Open Data
+    description: Public Open Data 
+    # Logos
+    favicon_url: '/images/icons/ckan.ico'
+    logo_url: '/base/images/ckan-logo.png'
+
+  # Provide users to be created on initialization
+  users:
+  - name: admin
+    email: admin@example.com
+    is_admin: yes
+  - name: tester
+    email: tester@example.com
+  
+  # Email settings
+  email: 
+    errors_to: webmaster@ckan.localdomain
+    errors_from: ckaner@ckan.localdomain
+    smtp: ~
+    #smtp:
+    #  server: mail.localdomain:587
+    #  user: contact@ckan.localdomain
+    #  password: s3cret
+    #  mail_from: no-reply@ckan.localdomain
+
+  # Configure HTTP sessions
+  session:
+    cookie_domain: ~
+    #cookie_domain: 'ckan.example.localdomain'
+    cookie_lifetime: ~
+    #cookie_lifetime: 7200
+
+
+#
+# Basic extensions for CKAN (archiver, datastorer)
+#
+
+# NOTE: 
+# Each extension `ckanext.foo` should provide a list of it's own plugins that wants
+# to be enabled in our CKAN instance (under `ckanext.foo.plugins`)
+
+ckanext:
+  datastorer:
+    install: yes
+    source:
+      repo:
+        url: 'https://github.com/ckan/ckanext-datastorer.git' 
+        push_url: ~
+        version: master 
+    plugins:
+    - 'datastorer'
+
+  archiver:
+    install: yes
+    source:  
+      repo:
+        url: 'https://github.com/ckan/ckanext-archiver.git'
+        push_url: ~
+        version: master
+    plugins:
+    - 'archiver'
+
+
+password_spec: 'chars=ascii_letters,digits length=9' 

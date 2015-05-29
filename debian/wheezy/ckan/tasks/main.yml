@@ -1,0 +1,127 @@
+---
+
+ - debug: var=ckan
+ - debug: var=ckanext
+
+ - set_fact:
+     present_ckan: ~ 
+     present_ckanext: ~ 
+ - set_fact:
+     present_ckan: '{{ansible_local.ckan| default({})}}'
+     present_ckanext: '{{ansible_local.ckanext| default({})}}'
+   when: ansible_local is defined
+ 
+ - debug: var=present_ckan
+ - debug: var=present_ckanext
+
+ # Configure APT repos, install required packages
+ 
+ - include: install-apt-packages.yml
+   tags: ['install', 'apt-get']
+
+ # Create base directories, install Python virtual environment
+ 
+ - include: create-env.yml
+   tags: ['install', 'pyenv']
+
+ # Install CKAN and requirements 
+
+ - include: install-ckan.yml
+   tags: ['install']
+
+ # Install CKAN extension: archiver
+
+ - include: install-ckanext-archiver.yml
+   when: ckanext.archiver.install
+   tags: ['install']
+  
+ # Install CKAN extension: datastorer
+
+ - include: install-ckanext-datastorer.yml
+   when: ckanext.datastorer.install
+   tags: ['install']
+ 
+ # Configure CKAN
+ 
+ - include: configure-ckan.yml 
+   tags: ['configure']
+
+ # Initialize database (create tables from model)
+
+ - include: init-ckan-db.yml
+   tags: ['init-db']
+
+ # Initialize users. 
+  
+ - include: create-ckan-users.yml
+   tags: ['create-users']
+
+ # Serve WSGI application
+ 
+ - name: Check if given deploy method is compatible with debug mode
+   assert: 
+     that: 
+     # The debug middleware not usable under Apache2 (either as proxy or as wsgi server)
+     - (not ckan.debug) or ckan.serve.use == 'paster'
+   tags: ['deploy']
+ 
+ - include: clean-serve-with-paster.yml
+   when: present_ckan and (present_ckan.serve.use == 'paster')
+   tags: ['deploy']
+ 
+ - include: clean-serve-with-apache2-proxy.yml
+   when: present_ckan and (present_ckan.serve.use == 'apache2/paster')
+   tags: ['deploy']
+ 
+ - include: clean-serve-with-apache2-wsgi.yml
+   when: present_ckan and (present_ckan.serve.use == 'apache2-mod-wsgi')
+   tags: ['deploy']
+ 
+ # NOTE This is because we want to short-circuit outgoing HTTP traffic to (one of) 
+ # our names. But, of course, it shadows these actual names (which typically are
+ # the virtual names of our frontend proxy).
+ - name: Ensure our names are always resolved to a local address
+   lineinfile:
+     dest: /etc/hosts
+     line: '127.0.100.1 {{item}}'
+     insertafter: EOF
+   with_items: '{{[ckan.serve.name] + ckan.serve.name_aliases}}' 
+   tags: ['deploy']
+
+ - include: serve-with-paster.yml
+   when: ckan.serve.use == 'paster'
+   tags: ['deploy']
+ 
+ - include: serve-with-apache2-proxy.yml
+   when: ckan.serve.use == 'apache2/paster'
+   tags: ['deploy']
+ 
+ - include: serve-with-apache2-wsgi.yml
+   when: ckan.serve.use == 'apache2-mod-wsgi'
+   tags: ['deploy']
+
+ # Setup Celery
+
+ - include: clean-celery-with-paster.yml
+   when: present_ckan and (present_ckan.celery.use == 'paster')
+   tags: ['celery']
+ 
+ - include: celery-with-paster.yml
+   when: ckan.celery.use == 'paster'
+   tags: ['celery']
+ 
+ # Dump current configuration
+
+ - file: path=/etc/ansible/facts.d state=directory mode=0775 
+   tags: ['dump-facts']
+ 
+ - name: Dump current configuration as facts
+   copy: 
+     content: '{{item.value| to_nice_json}}'
+     dest: '/etc/ansible/facts.d/{{item.key}}.fact'
+     mode: 0640
+   with_dict:
+     ckan: '{{ckan}}'
+     ckanext: '{{ckanext}}'
+   tags: ['dump-facts']
+

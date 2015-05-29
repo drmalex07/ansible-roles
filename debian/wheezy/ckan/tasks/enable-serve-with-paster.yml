@@ -1,0 +1,9 @@
+---
+ 
+ - name: Add cronjob for paster-serve
+   cron: 
+     name: "paster-serve-ckan" 
+     user: ckaner 
+     special_time: reboot 
+     state: present
+     job: 'screen -dm -S paster-serve-ckan ~ckaner/scripts/paster-serve-ckan.sh'

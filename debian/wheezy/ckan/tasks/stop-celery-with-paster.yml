@@ -1,0 +1,21 @@
+---
+
+ - name: Find pid for paster-celeryd session
+   sudo: yes
+   sudo_user: ckaner
+   shell: >
+     screen -ls| grep -P -o -e '\b[0-9]+[.](?=paster-celeryd\b)' || /bin/true
+   register: screen_ls_result
+
+ - set_fact:
+     paster_celeryd_pid: '{{screen_ls_result.stdout| int}}'
+
+ - name: Send Ctl-C to the paster-celeryd session
+   sudo: yes
+   sudo_user: ckaner
+   command: >
+     screen -S "paster-celeryd" -X stuff "^C"
+   when: paster_celeryd_pid
+  
+ - name: Wait for paster-celeryd's session to terminate
+   wait_for: path=/proc/{{paster_celeryd_pid}}/status state=absent

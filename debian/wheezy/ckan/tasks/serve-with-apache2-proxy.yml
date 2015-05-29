@@ -1,0 +1,26 @@
+---
+ 
+ - include: serve-with-paster.yml
+
+ - name: Enable Apache2 modules needed for reverse proxying
+   apache2_module: state=present name={{item}}
+   with_items:
+   - 'proxy'
+   - 'proxy_balancer'
+   - 'proxy_http'
+   notify: ['restart-apache2']
+
+ - name: Generate vhost configuration
+   template: 
+     src: 'etc/apache2/sites-available/proxy-to-paster' 
+     dest: '/etc/apache2/sites-available/ckan-{{ckan_site_id}}.proxy-to-paster'
+   notify: ['restart-apache2']
+
+ - name: Enable Apache2 vhost
+   file:
+     state: link
+     force: yes
+     path: '/etc/apache2/sites-enabled/ckan-{{ckan_site_id}}'
+     src: '../sites-available/ckan-{{ckan_site_id}}.proxy-to-paster'
+   notify: ['restart-apache2', 'print-ckan-url']
+

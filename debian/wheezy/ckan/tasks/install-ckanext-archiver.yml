@@ -1,0 +1,25 @@
+---
+
+ - name: Install ckanext-archiver from repo
+   sudo: yes
+   sudo_user: ckaner
+   pip: 
+     virtualenv: '{{ckan.pyenv_dir}}'
+     name: 'git+{{ckanext.archiver.source.repo.url}}@{{ckanext.archiver.source.repo.version}}#egg=ckanext-archiver'
+     state: present
+     extra_args: '-e'
+ 
+ - name: Set push-URL for ckanext-archiver repo
+   sudo: yes
+   sudo_user: ckaner
+   command: git remote set-url --push origin '{{ckanext.archiver.source.repo.push_url}}'
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckanext-archiver'
+   when: ckanext.archiver.source.repo.push_url| default(false)
+ 
+ - name: Install pip requirements for ckanext-archiver
+   sudo: yes
+   sudo_user: ckaner
+   pip:
+     virtualenv: '{{ckan.pyenv_dir}}'
+     requirements: '{{ckan.pyenv_dir}}/src/ckanext-archiver/pip-requirements.txt'

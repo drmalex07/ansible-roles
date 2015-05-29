@@ -1,0 +1,43 @@
+--- 
+  
+ - name: Name target configuration file
+   set_fact:
+     config_file: '{{ckan.config_name}}.ini'
+ 
+ - name: Generate server-side secret to encrypt auth cookies with
+   set_fact:
+     session_secret: '{{lookup("password", ckan.secrets_dir ~ "/session chars=ascii_letters,digits length=16")}}'
+
+ - file: path={{ckan.temp_dir}}/conf.d state=directory owner=ckaner group=ckaner mode=0774
+
+ - set_fact:
+     selected_ckan_plugins: '{{ckan.plugins + ckanext.archiver.plugins + ckanext.datastorer.plugins}}'
+
+ - name: Generate .ini configuration fragments
+   template: 
+     src: 'etc/ckan/conf.d/{{item.1}}' 
+     dest: '{{ckan.temp_dir}}/conf.d/{{ckan.config_name}}.section-{{item.0}}.ini' 
+     owner: ckaner
+     group: ckaner
+   with_indexed_items: ckan.config_sections
+   register: ckan_config_fragments
+
+ - name: Assemble configuration file
+   assemble: 
+     dest: '{{ckan.pyenv_dir}}/src/ckan/{{config_file}}' 
+     src: '{{ckan.temp_dir}}/conf.d' 
+     regexp: '^{{ckan.config_name}}[.]'
+   when: ckan_config_fragments.changed
+   notify: 
+   - 'check-selected-ckan-plugins' 
+   - 'restart-apache2'
+   
+ - name: Set ownership for configuration file
+   file: path={{ckan.pyenv_dir}}/src/ckan/{{config_file}} owner=ckaner group=ckaner mode=0660
+ 
+ - name: Link to configuration file under config.ini
+   file:
+     state: link
+     force: yes
+     src: '{{config_file}}'
+     path: '{{ckan.pyenv_dir}}/src/ckan/config.ini'

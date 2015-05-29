@@ -1,0 +1,21 @@
+---
+
+ - name: Find pid for paster-serve session
+   sudo: yes
+   sudo_user: ckaner
+   shell: >
+     screen -ls| grep -P -o -e '\b[0-9]+[.](?=paster-serve-ckan\b)' || /bin/true
+   register: screen_ls_result
+
+ - set_fact:
+     paster_serve_pid: '{{screen_ls_result.stdout| int}}'
+
+ - name: Send Ctl-C to paster-serve session
+   sudo: yes
+   sudo_user: ckaner
+   command: >
+     screen -S "paster-serve-ckan" -X stuff "^C"
+   when: paster_serve_pid
+  
+ - name: Wait for paster-serve's session to terminate
+   wait_for: path=/proc/{{paster_serve_pid}}/status state=absent

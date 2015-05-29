@@ -1,0 +1,9 @@
+---
+
+ckan:
+
+  config_sections:
+  - 'global.ini'
+  - 'server.ini'
+  - 'app.ini'
+  - 'logging.ini'

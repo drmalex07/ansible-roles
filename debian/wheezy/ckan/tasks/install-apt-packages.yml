@@ -1,0 +1,45 @@
+---
+  
+ - name: Trust key for PostgreSQL APT repos
+   apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
+ 
+ - name: Add PostgreSQL APT repos
+   copy: src=etc/apt/sources.list.d/pgdg.list dest=/etc/apt/sources.list.d/pgdg.list
+
+ - name: Update APT index
+   apt: update_cache=yes
+        
+ - name: Install basic development libraries and utilities
+   apt: pkg={{item}} state=latest
+   with_items:
+   - build-essential
+   - python-dev
+   - python-doc
+   - python-virtualenv
+   - python-setuptools
+   - libxslt1-dev
+   - libxml2-dev
+   - gettext
+
+ - name: Install compression/decompression libraries and utilities
+   apt: pkg={{item}} state=latest
+   with_items:
+   - unzip
+   - bzip2
+   - p7zip-full
+   - zlib1g-dev
+ 
+ - name: Install database client libraries and utilities
+   apt: pkg={{item}} state=latest
+   with_items:
+   - libpq5
+   - libpq-dev
+   - postgresql-client-9.3
+
+ - name: Install Apache2 webserver
+   apt: pkg={{item}} state=latest
+   with_items:
+   - apache2
+   - libapache2-mod-wsgi
+     
+

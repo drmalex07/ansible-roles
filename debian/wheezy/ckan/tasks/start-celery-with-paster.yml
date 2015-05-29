@@ -1,0 +1,9 @@
+---
+ 
+ # NOTE: See note on start-celery-with-paster.yml about removing `sudo` task attribute
+
+ - name: Start a screen session for paster-celeryd
+   #sudo: yes
+   #sudo_user: ckaner
+   shell: sudo -u ckaner screen -dm -S paster-celeryd ~ckaner/scripts/paster-celeryd.sh
+ 

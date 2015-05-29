@@ -1,0 +1,10 @@
+---
+
+ - name: Create database schema
+   sudo: yes
+   sudo_user: ckaner
+   shell: >
+     . '{{ckan.pyenv_dir}}/bin/activate' && paster db -c '{{ckan.config_name}}.ini' init
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckan'
+

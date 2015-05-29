@@ -1,0 +1,26 @@
+---
+
+ - name: Install ckan from repo
+   sudo: yes
+   sudo_user: ckaner
+   pip: 
+     virtualenv: '{{ckan.pyenv_dir}}'
+     name: 'git+{{ckan.source.repo.url}}@{{ckan.source.repo.version}}#egg=ckan'
+     state: present
+     extra_args: '-e'
+ 
+ - name: Set push-URL for ckan repo
+   sudo: yes
+   sudo_user: ckaner
+   command: git remote set-url --push origin '{{ckan.source.repo.push_url}}'
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckan'
+   when: ckan.source.repo.push_url| default(false)
+ 
+ - name: Install pip requirements for ckan
+   sudo: yes
+   sudo_user: ckaner
+   pip:
+     virtualenv: '{{ckan.pyenv_dir}}'
+     requirements: '{{ckan.pyenv_dir}}/src/ckan/requirements.txt'
+

@@ -1,0 +1,47 @@
+---
+  
+  # NOTE: This part exists mainly to create some administrative accounts, since users
+  # will usually be manipulated from either the web interface or from paster commands.
+ 
+ - name: List existing user accounts
+   sudo: yes
+   sudo_user: ckaner
+   shell: >
+     (. '{{ckan.pyenv_dir}}/bin/activate' && paster user -c '{{ckan.config_name}}.ini' list)| 
+     grep -e '^name=' | awk -F '=' '{print $2}'
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckan'
+   register: paster_user_result
+ 
+ - set_fact:
+     existing_ckan_users: '{{paster_user_result.stdout_lines}}'
+ 
+ - set_fact:
+     password: '{{lookup("password", ckan.secrets_dir ~ "/users/" ~ item ~ " " ~ password_spec)}}'  
+   register: passwords
+   with_items: ckan.users| map(attribute="name")| list
+ - set_fact: 
+     passwords: '{{passwords.results| to_map("item")| map_keys("*", "{0}.ansible_facts.password")}}'
+
+ - name: Create basic user accounts
+   sudo: yes
+   sudo_user: ckaner
+   shell: >
+     . '{{ckan.pyenv_dir}}/bin/activate' 
+     && paster user -c '{{ckan.config_name}}.ini' add '{{item.name}}' password='{{passwords[item.name]}}' email='{{item.email}}' 
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckan'
+   with_items: ckan.users
+   when: '{{item.name not in existing_ckan_users}}'
+
+ - name: Upgrade certain users to administrators
+   sudo: yes
+   sudo_user: ckaner
+   shell: >
+     . '{{ckan.pyenv_dir}}/bin/activate' 
+     && paster sysadmin -c '{{ckan.config_name}}.ini' add '{{item.name}}'
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckan'
+   with_items: ckan.users
+   when: item.is_admin| default(false)
+   

@@ -1,0 +1,9 @@
+---
+
+ - name: Remove cronjob for paster-serve
+   cron: 
+     name: "paster-serve-ckan" 
+     user: ckaner 
+     special_time: reboot 
+     state: absent
+

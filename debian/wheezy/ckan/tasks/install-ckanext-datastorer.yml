@@ -1,0 +1,25 @@
+---
+
+ - name: Install ckanext-datastorer from repo
+   sudo: yes
+   sudo_user: ckaner
+   pip: 
+     virtualenv: '{{ckan.pyenv_dir}}'
+     name: 'git+{{ckanext.datastorer.source.repo.url}}@{{ckanext.datastorer.source.repo.version}}#egg=ckanext-datastorer'
+     state: present
+     extra_args: '-e'
+ 
+ - name: Set push-URL for ckanext-datastorer repo
+   sudo: yes
+   sudo_user: ckaner
+   command: git remote set-url --push origin '{{ckanext.datastorer.source.repo.push_url}}'
+   args:
+     chdir: '{{ckan.pyenv_dir}}/src/ckanext-datastorer'
+   when: ckanext.datastorer.source.repo.push_url| default(false)
+ 
+ - name: Install pip requirements for ckanext-datastorer
+   sudo: yes
+   sudo_user: ckaner
+   pip:
+     virtualenv: '{{ckan.pyenv_dir}}'
+     requirements: '{{ckan.pyenv_dir}}/src/ckanext-datastorer/pip-requirements.txt'

@@ -1,0 +1,63 @@
+---
+
+ #
+ # Create basic directories
+ #
+
+ - name: Create root directory for file storage
+   file: path={{ckan.files_dir}} state=directory
+ - file: path={{ckan.files_dir}} state=directory mode=0775 owner=ckaner group=ckaner
+  
+ - name: Create directory for temporary session/cache data
+   file: path={{ckan.temp_dir}} state=directory
+ - file: path={{ckan.temp_dir}} state=directory mode=0775 owner=ckaner group=ckaner
+ 
+ - name: Create directory to keep pids for running daemons 
+   file: path={{ckan.run_dir}} state=directory mode=0775 owner=ckaner group=ckaner
+ 
+ - name: Create directory for logs 
+   file: path={{ckan.log_dir}} state=directory mode=0775 owner=ckaner group=ckaner
+
+ - name: Create a directory for helper scripts
+   file: path=~ckaner/scripts state=directory mode=0770 owner=ckaner group=ckaner
+
+ #
+ # Create virtual environment
+ # 
+
+ - name: Create virtual environment
+   command: /usr/bin/virtualenv {{ckan.pyenv_dir}} creates={{ckan.pyenv_dir}}
+   register: virtualenv_result
+ 
+ - name: Set ownership for virtual environment tree
+   file: path={{ckan.pyenv_dir}} state=directory recurse=yes owner=ckaner group=ckaner 
+   when: virtualenv_result.changed
+
+ - name: Install newest version of pip in virtual environment
+   sudo: yes
+   sudo_user: ckaner
+   pip:  name=pip extra_args='--upgrade' virtualenv={{ckan.pyenv_dir}}
+  
+ - name: Install basic Python packages
+   sudo: yes
+   sudo_user: ckaner
+   pip: name={{item}} virtualenv={{ckan.pyenv_dir}}
+   with_items: ckan.pyenv.basic_packages
+
+ - name: Create a shortcut to activate the environment
+   sudo: yes
+   sudo_user: ckaner
+   copy:
+     content: |
+       . {{ckan.pyenv_dir}}/bin/activate
+       cd {{ckan.pyenv_dir| dirname}}
+     mode: 0744
+     dest: ~ckaner/pyenv.sh
+ 
+ - name: Generate wrapper scripts for paster subcommands
+   sudo: yes
+   sudo_user: ckaner
+   template: src=scripts/{{item}} dest=~ckaner/scripts/{{item}} mode=0770 owner=ckaner group=ckaner
+   with_items:
+   - 'paster-serve-ckan.sh'
+   - 'paster-celeryd.sh'

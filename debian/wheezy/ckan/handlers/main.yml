@@ -1,0 +1,35 @@
+---
+  
+  # NOTE: If a dependent role adds/modifies some of the configuration .ini
+  # fragments, this handler must be invoked to re-assemble the actual configuration.
+  - name: reassemble-ckan-config
+    assemble: 
+      dest: '{{ckan.pyenv_dir}}/src/ckan/{{ckan.config_name}}.ini' 
+      src: '{{ckan.temp_dir}}/conf.d' 
+      regexp: '^{{ckan.config_name}}[.]'
+    notify: 
+    - 'check-selected-ckan-plugins' 
+    - 'restart-apache2'
+  
+  - name: check-selected-ckan-plugins
+    sudo: yes
+    sudo_user: ckaner
+    shell: >
+      . '{{ckan.pyenv_dir}}/bin/activate' && paster plugin-info -c '{{ckan.config_name}}.ini' &>/dev/null 
+    args:
+      chdir: '{{ckan.pyenv_dir}}/src/ckan'
+ 
+  - name: restart-apache2
+    service: name=apache2 state=restarted
+  
+  - name: ask-reboot
+    debug: { msg: " ** A system reboot is needed" }
+
+  - name: print-ckan-url 
+    debug: { msg: " ** Browse http://{{ckan.serve.name}}{{ckan.serve.url_prefix}}" }
+
+  - name: print-ckan-debug-url
+    debug: { msg: " ** Browse http://{{ckan.serve.name}}:{{ckan.serve.paster_opts.port}}" }
+    when: ckan.serve.paster_opts.listen_address == '0.0.0.0'
+
+

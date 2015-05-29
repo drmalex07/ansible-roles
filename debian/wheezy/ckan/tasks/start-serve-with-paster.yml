@@ -1,0 +1,19 @@
+---
+
+ # NOTE: The `screen` command below regularly fails when invoked from Ansible (!?).
+ # If we replace the `sudo` task attribute with the `sudo -u` command prefix, seems 
+ # to mysteriously work (??)
+
+ - name: Start a screen session for paster-serve
+   #sudo: yes
+   #sudo_user: ckaner
+   shell: sudo -u ckaner screen -dm -S paster-serve-ckan ~ckaner/scripts/paster-serve-ckan.sh
+   notify: ['print-ckan-debug-url']
+ 
+ - wait_for: port={{ckan.serve.paster_opts.port}} state=started delay=2 timeout=15
+   register: wait_port_result
+   ignore_errors: yes
+
+ - command: /bin/true
+   when: wait_port_result.failed is defined
+   notify: ['ask-reboot']

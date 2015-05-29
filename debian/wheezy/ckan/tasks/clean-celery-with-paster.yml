@@ -1,0 +1,5 @@
+---
+ 
+ - include: stop-celery-with-paster.yml
+
+ - include: disable-celery-with-paster.yml

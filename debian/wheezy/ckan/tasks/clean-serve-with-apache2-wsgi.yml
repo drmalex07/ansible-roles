@@ -1,0 +1,9 @@
+---
+ 
+ - name: Disable Apache2 vhost
+   file:
+     state: absent
+     force: yes
+     path: '/etc/apache2/sites-enabled/ckan-{{ckan_site_id}}'
+   notify: ['restart-apache2']
+

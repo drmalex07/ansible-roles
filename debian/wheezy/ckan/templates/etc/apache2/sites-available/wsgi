@@ -1,0 +1,35 @@
+<VirtualHost *:80>
+    ServerAdmin "{{ckan.email.errors_to}}"
+    ServerName "{{ckan.serve.name}}"
+
+    {% for alias in ckan.serve.name_aliases -%}
+    ServerAlias "{{alias}}"
+    {% endfor %}
+    
+    DocumentRoot /var/www
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+    <Directory /var/www/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    # Serve CKAN WSGI application
+    
+    {% set url_prefix = ckan.serve.url_prefix| default("/") -%}
+    {% set num_processes = ckan.serve.wsgi_opts.num_processes| int| default(2) -%}
+    {% set num_threads = ckan.serve.wsgi_opts.num_threads| int| default(12) -%}
+    WSGIScriptAlias "{{url_prefix}}" {{ckan.pyenv_dir}}/src/ckan/wsgi.py
+    WSGIPassAuthorization On
+    WSGIDaemonProcess "ckan_{{ckan_site_id}}" user=ckaner group=ckaner display-name="ckan/{{ckan_site_id}}" processes={{num_processes}} threads={{num_threads}}
+    WSGIProcessGroup "ckan_{{ckan_site_id}}"
+    
+    ErrorLog "${APACHE_LOG_DIR}/error.ckan-{{ckan_site_id}}.log"
+    LogLevel info
+    LogFormat "%{Host}i:%p %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\"" vhost_combined_1
+    CustomLog "${APACHE_LOG_DIR}/access.ckan-{{ckan_site_id}}.log" vhost_combined_1
+</VirtualHost>
