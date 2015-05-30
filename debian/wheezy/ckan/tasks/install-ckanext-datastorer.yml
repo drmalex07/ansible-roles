@@ -7,7 +7,7 @@
      virtualenv: '{{ckan.pyenv_dir}}'
      name: 'git+{{ckanext.datastorer.source.repo.url}}@{{ckanext.datastorer.source.repo.version}}#egg=ckanext-datastorer'
      state: present
-     extra_args: '-e'
+     extra_args: '--upgrade -e'
  
  - name: Set push-URL for ckanext-datastorer repo
    sudo: yes

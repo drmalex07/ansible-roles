@@ -7,7 +7,7 @@
      virtualenv: '{{ckan.pyenv_dir}}'
      name: 'git+{{ckanext.archiver.source.repo.url}}@{{ckanext.archiver.source.repo.version}}#egg=ckanext-archiver'
      state: present
-     extra_args: '-e'
+     extra_args: '--upgrade -e'
  
  - name: Set push-URL for ckanext-archiver repo
    sudo: yes

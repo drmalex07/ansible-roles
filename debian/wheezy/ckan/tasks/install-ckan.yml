@@ -7,7 +7,7 @@
      virtualenv: '{{ckan.pyenv_dir}}'
      name: 'git+{{ckan.source.repo.url}}@{{ckan.source.repo.version}}#egg=ckan'
      state: present
-     extra_args: '-e'
+     extra_args: '--upgrade -e'
  
  - name: Set push-URL for ckan repo
    sudo: yes
