@@ -77,7 +77,9 @@
 
   - set_fact:
       realm: '{{cgp.authn.realm}}'
-      credentials: '{{cgp.authn.credentials}}'
+      users: '{{cgp.authn.users}}'
+      secrets_dir: '{{collectd.secrets_dir}}'
+      password_spec: 'chars=ascii_letters,digits length=8'
   - name: Generate file for digest authentication
     template: src=htdigest dest=/etc/apache2/authn/cgp.htdigest mode=0640 owner=root group=www-data
 

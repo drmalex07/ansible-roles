@@ -1,4 +1,5 @@
-{% for cred in credentials -%}
-{% set digested_password = (cred.username ~ ':' ~ realm ~ ':' ~ cred.password)| md5 -%}
-{{cred.username ~ ':' ~ realm ~ ':' ~ digested_password}}
+{% for username in users -%}
+{% set password = lookup("password", secrets_dir ~ "/users/" ~ username ~ " " ~ password_spec) -%}
+{% set digested_password = (username ~ ':' ~ realm ~ ':' ~ password)| md5 -%}
+{{username ~ ':' ~ realm ~ ':' ~ digested_password}}
 {% endfor -%}
