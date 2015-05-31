@@ -6,4 +6,4 @@
      user: ckaner 
      special_time: reboot 
      state: present
-     job: 'screen -dm -S paster-celeryd ~ckaner/scripts/paster-celeryd.sh'
+     job: 'screen -dm -S paster-celeryd ~ckaner/scripts/celeryd.sh'

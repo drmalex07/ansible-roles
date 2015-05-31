@@ -6,4 +6,4 @@
      user: ckaner 
      special_time: reboot 
      state: present
-     job: 'screen -dm -S paster-serve-ckan ~ckaner/scripts/paster-serve-ckan.sh'
+     job: 'screen -dm -S paster-serve-ckan ~ckaner/scripts/serve.sh'

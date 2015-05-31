@@ -7,7 +7,7 @@
  - name: Start a screen session for paster-serve
    #sudo: yes
    #sudo_user: ckaner
-   shell: sudo -u ckaner screen -dm -S paster-serve-ckan ~ckaner/scripts/paster-serve-ckan.sh
+   shell: sudo -u ckaner screen -dm -S paster-serve-ckan ~ckaner/scripts/serve.sh
    notify: ['print-ckan-debug-url']
  
  - wait_for: port={{ckan.serve.paster_opts.port}} state=started delay=2 timeout=15

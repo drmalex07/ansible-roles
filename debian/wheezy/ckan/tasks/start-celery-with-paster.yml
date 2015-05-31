@@ -5,5 +5,5 @@
  - name: Start a screen session for paster-celeryd
    #sudo: yes
    #sudo_user: ckaner
-   shell: sudo -u ckaner screen -dm -S paster-celeryd ~ckaner/scripts/paster-celeryd.sh
+   shell: sudo -u ckaner screen -dm -S paster-celeryd ~ckaner/scripts/celeryd.sh
  

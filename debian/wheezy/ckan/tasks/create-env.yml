@@ -56,10 +56,18 @@
      mode: 0744
      dest: ~ckaner/pyenv.sh
  
+ #
+ # Copy helper scripts
+ #
+
  - name: Generate wrapper scripts for paster subcommands
    sudo: yes
    sudo_user: ckaner
    template: src=scripts/{{item}} dest=~ckaner/scripts/{{item}} mode=0770 owner=ckaner group=ckaner
    with_items:
-   - 'paster-serve-ckan.sh'
-   - 'paster-celeryd.sh'
+   - 'serve.sh'
+   - 'celeryd.sh'
+   - 'purge-dataset.sh'
+   - 'list-datasets.sh'
+   - 'show-dataset.sh'
+
