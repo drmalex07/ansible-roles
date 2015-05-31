@@ -37,11 +37,8 @@
     notify: [restart-tomcat]
 
   - set_fact:
-      manager_username: '{{tomcat.manager.username}}'
-      manager_password: '{{tomcat.manager.password| default("")}}'
-  - set_fact:    
-      manager_password: '{{lookup("password", "secrets/manager-password")}}'
-    when: not manager_password
+      manager_username: '{{tomcat.manager}}'
+      manager_password: '{{lookup("password", tomcat.secrets_dir ~ "/users/" ~ tomcat.manager ~ " " ~ tomcat.password_spec)}}'
 
   - name: Provide Tomcat basic users
     template: src=etc/tomcat6/tomcat-users.xml dest=/etc/tomcat6/tomcat-users.xml group=tomcat6 mode=0660

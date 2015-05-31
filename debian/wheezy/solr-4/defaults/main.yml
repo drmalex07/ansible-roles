@@ -10,9 +10,9 @@ tomcat:
     port: 8983
     address: '0.0.0.0'
 
-  manager:
-    username: tomcat
-    #password: tomc@t
+  secrets_dir: "secrets"
+  password_spec: "chars=ascii_letters,digits length=9"
+  manager: tomcat
 
 solr:
   share_dir: /usr/local/share/solr
