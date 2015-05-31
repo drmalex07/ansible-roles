@@ -20,6 +20,7 @@ postgres-n3.localdomain
 ```
 
 Create the following group variable files:
+
  *  `group_vars/database.yml`: common configuration shared by both master and standby servers
  *  `group_vars/database-master.yml`: master-specific configuration (overrides or additions)
  *  `group_vars/database-standby.yml`: standby-specific (overrides or additions)
@@ -27,6 +28,7 @@ Create the following group variable files:
 Suppose we know that all servers should listen to a specific ipv4 (or ipv6) interface, say `eth1`, most probably this would be an interface to a private network (say 10.0.2.0/24). In the following var files we will use references to `ansible_eth1`, assuming that previously all host facts have been gathered successfully. 
 
 An example `group_vars/database.yml` would be:
+
 ```yaml
 postgres:
   pgtune: true
@@ -36,6 +38,9 @@ postgres:
     - '127.0.0.1'
     - '{{ansible_eth1.ipv4.address}}'
     port: 5432
+  
+  # Define playbook-level directory to store/read credentials
+  secrets_dir: '{{"files/secrets/groups/database"| realpath}}'  
 
   # Define users
   users:
@@ -47,12 +52,6 @@ postgres:
   - name: collectd
     trusted: true
   
-  credentials:
-  - username: tester
-    password: test
-  - username: replicator
-    password: replicate
-
   # Additional tablespaces to be created
   tablespaces:
   - name: tablespace_1

@@ -7,6 +7,12 @@ postgres:
     port: 5432
 
   pgtune: false
+  
+  # The directory to store/read credentials
+  secrets_dir: 'secrets'
+  
+  # The spec to use when generating user passwords
+  password_spec: 'chars=ascii_letters,digits length=9'
 
   # Provide users with their role flags
   # Notes: 
@@ -24,11 +30,6 @@ postgres:
   #  allowed_addresses: all
   #- name: collectd
   #  trusted: true
-
-  credentials: []
-  #credentials:
-  #- username: tester
-  #  password: t3ster
 
   # Additional tablespaces to be created
   tablespaces: []

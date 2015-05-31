@@ -1,6 +1,3 @@
 #hostname:port:database:username:password
-{% for cred in postgres.credentials -%}
-{% if cred.username == replication.user -%}
-*:{{postgres.service.port}}:replication:{{replication.user}}:{{cred.password}}
-{% endif -%}
-{% endfor -%}
+{% set replication_password = lookup("password", secrets_dir ~ "/users/" ~ replication.user ~ " " ~ password_spec) -%}
+*:{{postgres.service.port}}:replication:{{replication.user}}:{{replication_password}}

@@ -26,7 +26,7 @@
   
   - name: Read or generate password for rsync transfer
     set_fact:
-      rsync_password: '{{lookup("password", "secrets/rsync chars=ascii_letters,digits")}}' 
+      rsync_password: '{{lookup("password", postgres.secrets_dir ~ "/rsync" ~ " " ~ "chars=ascii_letters,digits")}}' 
 
   - name: Provide credentials for rsync transfer
     lineinfile:

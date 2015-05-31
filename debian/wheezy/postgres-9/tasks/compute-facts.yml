@@ -53,6 +53,10 @@
       known_users: '{{known_users| union([replication.user])}}'
     when: replication.user
   
+  - set_fact:
+      secrets_dir: '{{postgres.secrets_dir}}'
+      password_spec: '{{postgres.password_spec}}'
+
   # Compute tablespace-related facts
 
   - shell: psql -t -A -F ',' -c '\db'| awk -F ',' -- '{print $1}' 
