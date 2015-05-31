@@ -102,7 +102,7 @@ Finally, an example playbook would simply be:
   - debug: var=postgres.replication
   - pause: # verify everything is ok!
   roles:
-  - postgres9
+  - postgres-9
 ```
 
 **Note: hostnames as allowed addresses**
