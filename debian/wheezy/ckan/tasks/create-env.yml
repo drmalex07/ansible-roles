@@ -49,6 +49,8 @@
    sudo_user: ckaner
    copy:
      content: |
+       export CKAN_PYENV={{ckan.pyenv_dir}}
+       export CKAN_CONFIG={{ckan.pyenv_dir}}/src/ckan/config.ini
        . {{ckan.pyenv_dir}}/bin/activate
        cd {{ckan.pyenv_dir| dirname}}
      mode: 0744
