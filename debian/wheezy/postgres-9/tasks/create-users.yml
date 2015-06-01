@@ -16,9 +16,8 @@
   - name: Set user passwords
     command: >
       psql -c 
-      'ALTER ROLE "{{item.name}}" PASSWORD $${{lookup("password", secrets_dir ~ "/users/" ~ item.name ~ " " ~ password_spec)}}$$'
+      'ALTER ROLE "{{item}}" PASSWORD $${{lookup("password", secrets_dir ~ "/users/" ~ item ~ " " ~ password_spec)}}$$'
     sudo: yes
     sudo_user: postgres
-    with_items: postgres.users
-    when: item.name in known_users
+    with_items: known_users
 

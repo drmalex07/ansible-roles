@@ -41,6 +41,11 @@
     sudo_user: postgres
     register: psql_du_result
   
+  # Generate password for archive transfers 
+  
+  - set_fact:
+      rsync_password: '{{lookup("password", postgres.secrets_dir ~ "/rsync" ~ " " ~ "chars=ascii_letters,digits")}}' 
+
   # Compute user-related facts
   
   - set_fact:

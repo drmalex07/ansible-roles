@@ -25,6 +25,8 @@ postgres:
   #  allowed_addresses: 
   #  - 'samenet'
   #  - '192.168.5.0/24'
+  #  - { address: '192.168.7.0/24', require_ssl: yes }
+  #  - { address: '192.168.1.15/31' }
   #- name: nowhere-man
   #  options: [LOGIN]
   #  allowed_addresses: all

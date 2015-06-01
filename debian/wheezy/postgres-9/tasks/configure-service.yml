@@ -20,7 +20,7 @@
     template: src=etc/postgresql/replication.conf dest={{config_dir}}/replication.conf owner=postgres group=postgres
   
   - name: Generate a basic configuration at postgresql.conf
-    template: src=etc/postgresql/postgresql.conf dest={{config_dir}}/postgresql.conf owner=postgres group=postgres backup=yes
+    template: src=etc/postgresql/postgresql.conf dest={{config_dir}}/postgresql.conf owner=postgres group=postgres
     #notify: [restart-postgresql]
     
   # Tune  
@@ -39,7 +39,7 @@
   # Generate host-based access rules
   
   - name: Generate pg_hba.conf rules
-    template: src=etc/postgresql/pg_hba.conf dest={{config_dir}}/pg_hba.conf backup=yes
+    template: src=etc/postgresql/pg_hba.conf dest={{config_dir}}/pg_hba.conf
     #notify: [restart-postgresql]
   
   # Generate pgpass entry for replication connections
