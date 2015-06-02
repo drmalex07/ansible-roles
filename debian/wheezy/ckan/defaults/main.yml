@@ -123,7 +123,6 @@ ckan:
     #smtp:
     #  server: mail.localdomain:587
     #  user: contact@ckan.localdomain
-    #  password: s3cret
     #  mail_from: no-reply@ckan.localdomain
 
   # Configure HTTP sessions
@@ -137,10 +136,6 @@ ckan:
 #
 # Basic extensions for CKAN (archiver, datastorer)
 #
-
-# NOTE: 
-# Each extension `ckanext.foo` should provide a list of it's own plugins that wants
-# to be enabled in our CKAN instance (under `ckanext.foo.plugins`)
 
 ckanext:
   datastorer:

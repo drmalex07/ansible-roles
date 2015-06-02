@@ -12,6 +12,10 @@
 
  - set_fact:
      selected_ckan_plugins: '{{ckan.plugins + ckanext.archiver.plugins + ckanext.datastorer.plugins}}'
+ 
+ - set_fact:
+     smtp_password: '{{lookup("password", ckan.secrets_dir ~ "/smtp")}}'
+   when: ckan.email.smtp
 
  - name: Generate .ini configuration fragments
    template: 
