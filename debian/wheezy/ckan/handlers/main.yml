@@ -11,6 +11,13 @@
     - 'check-selected-ckan-plugins' 
     - 'restart-apache2'
   
+  # NOTE: Same as above, but for testing configuration 
+  - name: reassemble-ckan-tests-config
+    assemble: 
+      dest: '{{ckan.pyenv_dir}}/src/ckan/test-core.ini' 
+      src: '{{ckan.temp_dir}}/conf.d' 
+      regexp: '^tests[.]'
+
   - name: check-selected-ckan-plugins
     sudo: yes
     sudo_user: ckaner

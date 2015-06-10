@@ -132,6 +132,18 @@ ckan:
     cookie_lifetime: ~
     #cookie_lifetime: 7200
 
+  # Configure test suite
+  tests:
+    solr:
+      core_url: 'http://localhost:8983/solr/ckan'
+    database:
+      url: 'postgresql://ckaner:ckaner@localhost/ckan_tests'
+      datastore_read_url: 'postgresql://ckan_datareader:ckan_datareader@localhost/ckan_data_tests'
+      datastore_write_url: 'postgresql://ckan_datastorer:ckan_datastorer@localhost/ckan_data_tests'
+    
+    plugins:
+    - 'stats'
+    - 'datastore'
 
 #
 # Basic extensions for CKAN (archiver, datastorer)
