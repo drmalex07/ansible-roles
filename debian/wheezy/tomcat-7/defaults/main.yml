@@ -1,0 +1,28 @@
+---
+
+tomcat:
+  # Define min/max for heap size (CATALINA_OPTS)
+  max_heap_size: 896m
+  min_heap_size: 384m
+  
+  connector:
+    port: 8081
+    address: '0.0.0.0'
+  
+  ajp_connector:
+    port: 9001
+    address: '127.0.0.1'
+  
+  shutdown:
+    port: 8001
+
+  instance_id: 1
+  
+  # Configure init.d service parameters 
+  stop_timeout: 12
+  
+  # Provide credentials for tomcat manager
+  secrets_dir: "secrets"
+  password_spec: "chars=ascii_letters,digits length=9"
+  manager: tomcat
+

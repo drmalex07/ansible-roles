@@ -1,0 +1,8 @@
+---
+  
+java:
+  download_url: http://aiolos.survey.ntua.gr/tmp/oracle-j2sdk1.7_1.7.0+update67_amd64.deb
+   
+tomcat:
+  download_url: http://apache.otenet.gr/dist/tomcat/tomcat-7/v7.0.63/bin/apache-tomcat-7.0.63.tar.gz
+ 

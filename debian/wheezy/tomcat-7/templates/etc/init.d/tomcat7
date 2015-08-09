@@ -1,0 +1,31 @@
+#!/bin/bash
+
+### BEGIN INIT INFO
+# Provides:          {{tomcat_instance_name}}
+# Required-Start:    $local_fs $network
+# Required-Stop:     $local_fs
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Tomcat7 instance
+# Description:       Run Tomcat7 instance
+### END INIT INFO
+
+cd /opt/{{tomcat_instance_name}}
+
+case "$1" in
+  start)
+    echo "Starting Tomcat instance: {{tomcat_instance_name}} ..."
+    sudo -u tomcat ./bin/catalina.sh start
+    ;;
+  stop)
+    echo "Stopping Tomcat instance: {{tomcat_instance_name}} ..."
+    sudo -u tomcat ./bin/catalina.sh stop '{{tomcat.stop_timeout| default(10)}}' -force
+    ;;
+  *)
+    echo "Usage: invoke-rc.d {{tomcat_instance_name}} {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+

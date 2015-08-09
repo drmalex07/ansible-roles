@@ -1,85 +1,7 @@
 ---
 
-  - group: name=tomcat state=present
-
-  - user: name=tomcat state=present shell=/bin/bash group=tomcat
-
-  - file: path=~/packages state=directory
-  
-  ## Install Java SDK (non-interactive version)
-
-  - set_fact:
-      java_package: '{{java.download_url| basename}}'
-
-  - stat: path=~/packages/{{java_package}}
-    register: java_package_result
-
-  - name: Download Java deb package
-    get_url: url={{java.download_url}} dest=~/packages/
-    when: not java_package_result.stat.exists
-
-  - name: Install deb package for Java
-    shell: cd ~/packages && dpkg -i {{java_package}}
-
-  ## Install Tomcat (7.x)
- 
-  - set_fact:
-      tomcat_package: '{{tomcat.download_url| basename}}'
- 
-  - stat: path=~/packages/{{tomcat_package}}
-    register: tomcat_package_result
-
-  - name: Download Tomcat
-    get_url: url={{tomcat.download_url}} dest=~/packages
-    when: not tomcat_package_result.stat.exists
-
-  - name: Find Tomcat package name
-    shell: tar tf ~/packages/{{tomcat_package}}| awk -F '/' '{print $1}'| uniq
-    register: package_dirs
-  - set_fact:
-      tomcat_package_name: '{{package_dirs.stdout}}' 
-  
-  - name: Unpack Tomcat package
-    shell: cd /opt && tar xf ~/packages/{{tomcat_package}}
-
-  - file: path=/opt/{{tomcat_package_name}} state=directory recurse=yes owner=tomcat group=tomcat
-
-  - file: path=/opt/tomcat7 src={{tomcat_package_name}} state=link
-
-  ## Configure Tomcat
-
-  - name: Provide Tomcat server configuration
-    template: src=etc/tomcat7/server.xml dest=/opt/tomcat7/conf/server.xml
-
-  - set_fact:
-      manager_username: '{{tomcat.manager}}'
-      manager_password: '{{lookup("password", tomcat.secrets_dir ~ "/users/" ~ tomcat.manager ~ " " ~ tomcat.password_spec)}}'
-
-  - name: Provide Tomcat basic users
-    template: src=etc/tomcat7/tomcat-users.xml dest=/opt/tomcat7/conf/tomcat-users.xml group=tomcat mode=0660
- 
-  - name: Provide web.xml
-    template: src=etc/tomcat7/web.xml dest=/opt/tomcat7/conf/web.xml group=tomcat mode=0664
-  
-  - file: path=~/scripts state=directory
-    sudo: yes
-    sudo_user: tomcat
-
-  - name: Generate scripts to start/stop Tomcat
-    template: src=scripts/{{item}} dest=~/scripts/{{item}} mode=0774
-    sudo: yes
-    sudo_user: tomcat
-    with_items:
-    - start-tomcat.sh
-    - stop-tomcat.sh
-  
-  - file: path={{tomcat.pid_file| dirname}} state=directory mode=0775 group=tomcat
-  
-  - name: Generate init.d script
-    template: src=etc/init.d/tomcat7 dest=/etc/init.d/tomcat7 mode=0744
-
-  - name: Provide links for init.d script
-    shell: update-rc.d tomcat7 defaults
+  - debug: var=tomcat
+  - debug: var=geoserver
 
   ## Download and deploy GeoServer
 
@@ -98,25 +20,26 @@
   
   - file: path=/opt/geoserver.war group=tomcat
   
-  - file: path=/opt/tomcat7/webapps/geoserver state=directory owner=tomcat group=tomcat mode=0775
+  - file: path=/opt/{{tomcat_instance_name}}/webapps/geoserver state=directory owner=tomcat group=tomcat mode=0775
   
   - file: path={{geoserver.data_dir}} state=directory owner=tomcat group=tomcat mode=0775
   
   - file: path={{geoserver.log_dir}} state=directory owner=tomcat group=tomcat mode=0775
 
   - name: Unpack WAR under Tomcat webapps
-    shell: cd /opt/tomcat7/webapps && 7z x -y -ogeoserver /opt/geoserver.war
+    shell: cd /opt/{{tomcat_instance_name}}/webapps && 7z x -y -ogeoserver /opt/geoserver.war
     sudo: yes
     sudo_user: tomcat
 
   - name: Configure Geoserver
-    template: src=etc/tomcat7/webapps/geoserver/WEB-INF/web.xml dest=/opt/tomcat7/webapps/geoserver/WEB-INF/web.xml owner=tomcat group=tomcat
+    template: src=geoserver/WEB-INF/web.xml dest=/opt/{{tomcat_instance_name}}/webapps/geoserver/WEB-INF/web.xml owner=tomcat group=tomcat
   
   - stat: path={{geoserver.data_dir}}/global.xml
     register: geoserver_data_result
   
   - name: Initialize Geoserver data directory
-    shell: cp -r /opt/tomcat7/webapps/geoserver/data/* {{geoserver.data_dir}}
+    shell: cp -r /opt/{{tomcat_instance_name}}/webapps/geoserver/data/* {{geoserver.data_dir}}
     sudo: yes
     sudo_user: tomcat
     when: not geoserver_data_result.stat.exists
+

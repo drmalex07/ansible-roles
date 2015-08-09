@@ -1,26 +1,6 @@
 ---
 
-tomcat:
-  # Define min/max for heap size (for CATALINA_OPTS)
-  max_heap_size: 896m
-  min_heap_size: 384m
-  
-  # Configure service endpoint
-  connector:
-    port: 8081
-    address: '0.0.0.0'
-  
-  # Configure init.d service parameters 
-  pid_file: /var/local/tomcat7/catalina.pid
-  stop_timeout: 10
-  
-  # Provide credentials for tomcat manager
-  secrets_dir: "secrets"
-  password_spec: "chars=ascii_letters,digits length=9"
-  manager: tomcat
-
 geoserver:
-  # Basic directories
   data_dir: /var/local/geoserver/data
   log_dir: /var/local/geoserver/logs
 

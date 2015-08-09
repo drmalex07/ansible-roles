@@ -1,0 +1,85 @@
+---
+  - debug: var=tomcat
+
+  - group: name=tomcat state=present
+
+  - user: name=tomcat state=present shell=/bin/bash group=tomcat
+
+  - file: path=~/packages state=directory
+  
+  - set_fact:
+      tomcat_instance_name: 'tomcat7-{{tomcat.instance_id| string}}'
+
+  ## Install Java SDK (non-interactive version)
+
+  - set_fact:
+      java_package: '{{java.download_url| basename}}'
+
+  - stat: path=~/packages/{{java_package}}
+    register: java_package_result
+
+  - name: Download Java deb package
+    get_url: url={{java.download_url}} dest=~/packages/
+    when: not java_package_result.stat.exists
+
+  - name: Install deb package for Java
+    shell: cd ~/packages && dpkg -i {{java_package}}
+
+  ## Install Tomcat
+ 
+  - set_fact:
+      tomcat_package: '{{tomcat.download_url| basename}}'
+ 
+  - stat: path=~/packages/{{tomcat_package}}
+    register: tomcat_package_result
+
+  - name: Download Tomcat
+    get_url: url={{tomcat.download_url}} dest=~/packages
+    when: not tomcat_package_result.stat.exists
+
+  - name: Find Tomcat package name
+    shell: tar tf ~/packages/{{tomcat_package}}| awk -F '/' '{print $1}'| uniq
+    register: package_dirs
+  - set_fact:
+      tomcat_package_name: '{{package_dirs.stdout}}' 
+  
+  - name: Unpack Tomcat package under /opt
+    shell: cd /opt && tar xf ~/packages/{{tomcat_package}}
+
+  - name: Stop Tomcat instance, if running
+    service: name={{tomcat_instance_name}} state=stopped
+    ignore_errors: yes
+  
+  - file: path=/opt/{{tomcat_package_name}} state=directory recurse=yes owner=tomcat group=tomcat
+  
+  - file: path=/opt/{{tomcat_instance_name}} state=absent
+
+  - name: Rename according to this instance name
+    shell: mv /opt/{{tomcat_package_name}} /opt/{{tomcat_instance_name}}
+
+  ## Configure Tomcat
+
+  - name: Provide Tomcat server configuration
+    template: src=tomcat7/conf/server.xml dest=/opt/{{tomcat_instance_name}}/conf/server.xml
+
+  - set_fact:
+      manager_username: '{{tomcat.manager}}'
+      manager_password: '{{lookup("password", tomcat.secrets_dir ~ "/users/" ~ tomcat.manager ~ " " ~ tomcat.password_spec)}}'
+
+  - name: Provide Tomcat basic users
+    template: src=tomcat7/conf/tomcat-users.xml dest=/opt/{{tomcat_instance_name}}/conf/tomcat-users.xml mode=0660
+ 
+  - name: Provide web.xml
+    template: src=tomcat7/conf/web.xml dest=/opt/{{tomcat_instance_name}}/conf/web.xml mode=0664
+  
+  - name: Provide shell environment for this instance
+    template: src=tomcat7/bin/setenv.sh dest=/opt/{{tomcat_instance_name}}/bin/setenv.sh owner=tomcat group=tomcat mode=0774 
+  
+  - file: path=/var/local/tomcat7 state=directory mode=0775 group=tomcat
+  
+  - name: Generate init.d script
+    template: src=etc/init.d/tomcat7 dest=/etc/init.d/{{tomcat_instance_name}} mode=0744
+
+  - name: Provide links for init.d script
+    shell: update-rc.d {{tomcat_instance_name}} defaults
+
