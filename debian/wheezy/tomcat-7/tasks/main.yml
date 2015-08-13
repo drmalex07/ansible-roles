@@ -77,6 +77,10 @@
   
   - file: path=/var/local/tomcat7 state=directory mode=0775 group=tomcat
   
+  ## Provide init.d service for Tomcat instance
+
+  - apt: name=sudo state=latest
+  
   - name: Generate init.d script
     template: src=etc/init.d/tomcat7 dest=/etc/init.d/{{tomcat_instance_name}} mode=0744
 
