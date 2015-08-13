@@ -87,8 +87,10 @@
                clientAuth="false" sslProtocol="TLS" />
     -->
 
+    {% if tomcat.ajp_connector.port -%}
     <!-- Define an AJP 1.3 Connector on port 8009 -->
     <Connector port="{{tomcat.ajp_connector.port}}" address="{{tomcat.ajp_connector.address| default('127.0.0.1')}}" protocol="AJP/1.3" />
+    {% endif %}
 
     <!-- An Engine represents the entry point (within Catalina) that processes
          every request.  The Engine implementation for Tomcat stand alone
