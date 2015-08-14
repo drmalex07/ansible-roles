@@ -36,10 +36,20 @@
   
   - stat: path={{geoserver.data_dir}}/global.xml
     register: geoserver_data_result
-  
+
+  ## Initialize data directory
+
   - name: Initialize Geoserver data directory
     shell: cp -r /opt/{{tomcat_instance_name}}/webapps/geoserver/data/* {{geoserver.data_dir}}
     sudo: yes
     sudo_user: tomcat
     when: not geoserver_data_result.stat.exists
-
+  
+  - set_fact:
+      admin_password: '{{lookup("password", geoserver.secrets_dir ~ "/users/admin" ~ " " ~ geoserver.password_spec)}}'
+  
+  - name: Setup credentials for admin
+    template: src=data/security/usergroup/default/users.xml dest={{geoserver.data_dir}}/security/usergroup/default/users.xml mode=0640 
+    sudo: yes
+    sudo_user: tomcat
+    when: not geoserver_data_result.stat.exists

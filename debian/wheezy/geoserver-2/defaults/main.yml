@@ -4,4 +4,5 @@ geoserver:
   data_dir: /var/local/geoserver/data
   log_dir: /var/local/geoserver/logs
 
-
+  secrets_dir: "secrets"
+  password_spec: "chars=ascii_letters,digits length=9"
