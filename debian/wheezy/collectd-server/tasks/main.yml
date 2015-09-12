@@ -1,5 +1,7 @@
 ---
   
+  - debug: var=collectd
+
   #
   # Install APT packages
   #
