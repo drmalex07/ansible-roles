@@ -82,7 +82,7 @@ user: ~
 #    - 'zope.schema==4.4.0'
 #  git_config:
 #    user:
-#      name: drmalex07
+#      name: Michail Alexakis
 #      email: alexakis@imis.athena-innovation.gr 
 
 # Preferences for programs

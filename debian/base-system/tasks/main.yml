@@ -6,8 +6,8 @@
   
   # Install APT Packages
   
-  - name: Add APT repository for wheezy-backports
-    copy: src=etc/apt/sources.list.d/wheezy-backports.list dest=/etc/apt/sources.list.d/wheezy-backports.list mode=0644
+  - name: Add APT repository for backports
+    copy: src=etc/apt/sources.list.d/jessie-backports.list dest=/etc/apt/sources.list.d/jessie-backports.list mode=0644
     when: apt.use_backports
 
   - name: Update APT index
