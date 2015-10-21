@@ -39,6 +39,9 @@
     user: name={{user.name}} createhome=yes shell=/bin/bash groups=sudo,wheel append=yes
     when: user
 
+  - name: Configure (GNU) screen
+    copy: src=etc/screenrc dest=/etc/screenrc
+ 
   - name: Create bash profile for root
     template: src=etc/root-profile dest=/root/.profile mode=0600
 
