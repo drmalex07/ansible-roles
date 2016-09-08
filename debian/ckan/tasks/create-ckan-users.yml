@@ -8,7 +8,7 @@
    sudo_user: ckaner
    shell: >
      (. '{{ckan.pyenv_dir}}/bin/activate' && paster user -c '{{ckan.config_name}}.ini' list)| 
-     grep -e '^name=' | awk -F '=' '{print $2}'
+     grep -o -e '^name=\(\w*\)' | awk -F '=' '{print $2}'
    args:
      chdir: '{{ckan.pyenv_dir}}/src/ckan'
    register: paster_user_result
