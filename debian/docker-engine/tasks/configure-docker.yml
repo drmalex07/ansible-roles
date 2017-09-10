@@ -1,0 +1,34 @@
+---
+
+ #
+ # Configure docker daemon
+ #
+
+ - file:
+     path: /etc/systemd/system/docker.socket.d
+     state: directory
+   sudo: yes
+   sudo_user: root
+    
+ - name: Configure socket for docker daemon
+   template:
+     src: socket.conf.j2
+     dest: /etc/systemd/system/docker.socket.d/10-socket.conf
+     mode: 0600
+   notify:
+   - 'restart-docker'
+   sudo: yes
+   sudo_user: root
+
+ - name: Update kernel boot parameters to enable cgroups on memory
+   lineinfile:
+     dest: /etc/default/grub
+     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT[ ]*='
+     line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet cgroup_enable=memory swapaccount=1"'  
+     mode: 0600
+     backup: no
+   notify:
+   - 'update-grub'
+   sudo: yes
+   sudo_user: root
+

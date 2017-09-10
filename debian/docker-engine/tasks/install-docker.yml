@@ -1,0 +1,46 @@
+---
+
+  #
+  # Install docker CE and utilities
+  #
+
+  - name: Add APT key for Docker repositories
+    apt_key:
+      url: 'https://download.docker.com/linux/debian/gpg'
+      state: present
+    sudo: yes
+    sudo_user: root
+
+  - name: Add APT repositories for Docker
+    apt_repository:
+      repo: 'deb https://download.docker.com/linux/debian jessie stable'
+      state: present
+    sudo: yes
+    sudo_user: root
+
+  - name: Update APT index
+    apt: update_cache=yes
+    sudo: yes
+    sudo_user: root
+   
+  - name: Install docker
+    apt: pkg=docker-ce state=latest
+    sudo: yes
+    sudo_user: root
+
+  - name: Run a hello-world Docker container
+    shell: docker run hello-world 
+    sudo: yes
+    sudo_user: root
+  
+  - name: Download docker-compose binary
+    get_url:
+      url: 'https://github.com/docker/compose/releases/download/{{docker_compose_version}}/docker-compose-Linux-{{ansible_architecture}}'
+      dest: /usr/local/bin/docker-compose 
+      mode: 0774
+      owner: root
+      group: docker
+    when: docker_compose_version is defined
+    sudo: yes
+    sudo_user: root
+

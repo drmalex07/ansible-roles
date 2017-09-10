@@ -1,0 +1,31 @@
+---
+
+  #
+  # Install basic APT packages
+  #
+
+  - name: Update APT index
+    apt: update_cache=yes
+    sudo: yes
+    sudo_user: root
+
+  - name: Install basic APT packages
+    apt: pkg={{item}} state=latest
+    with_items: 
+    - 'vim' 
+    - 'bash-completion'
+    - 'sudo' 
+    - 'curl' 
+    - 'htop' 
+    - 'tree' 
+    - 'jq' 
+    - 'screen' 
+    - 'bzip2' 
+    - 'p7zip-full'
+    - 'apt-transport-https'
+    - 'ca-certificates'
+    - 'gnupg2'
+    - 'software-properties-common'
+    sudo: yes
+    sudo_user: root
+
